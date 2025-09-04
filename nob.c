@@ -32,7 +32,9 @@ int main(int argc, char **argv)
 #elif defined(__linux__)
     nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c");
 #elif defined(_MSC_VER)
-    //nob_cmd_append(&cmd, "cl", "/Fe:" BUILD_FOLDER "sunburst.exe", SRC_FOLDER "gameEx.c");
+    nob_cmd_append(&cmd, "cl", "/Fe:" BUILD_FOLDER "sunburst.exe", SRC_FOLDER "gameEx.c", "/link", "user32.lib", "gdi32.lib");
+    // cl /O2 /std:c11 sunburst_win.c /link user32.lib gdi32.lib
+
     #else
     #   error "Unsupported platform"
 #endif // _MSC_VER
