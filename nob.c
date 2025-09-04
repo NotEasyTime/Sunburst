@@ -4,6 +4,8 @@
 // Some folder paths that we use throughout the build process.
 #define BUILD_FOLDER "build/"
 #define SRC_FOLDER   "./"
+#define IMPLNTS      "Implements/"
+#define TESTS        "Tests/"
 
 int main(int argc, char **argv)
 {
@@ -26,7 +28,7 @@ int main(int argc, char **argv)
 
     // Let's append the command line arguments
 #if defined(__APPLE__)
-    nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c", SRC_FOLDER"b_Cocoa.m", "-framework", "Cocoa");
+    nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", TESTS"gameEx.c", IMPLNTS"b_Cocoa.m", "-framework", "Cocoa");
 #elif defined(__linux__)
     nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c");
 #elif defined(_MSC_VER)

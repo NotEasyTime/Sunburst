@@ -1,6 +1,6 @@
 // macwin.m — build this with clang as Objective-C and link with -framework Cocoa
 #import <Cocoa/Cocoa.h>
-#import "sunburst.h"
+#import "../sunburst.h"
 
 @interface MacWinDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 @property(nonatomic, assign) BOOL shouldKeepRunning;

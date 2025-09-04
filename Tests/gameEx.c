@@ -1,4 +1,4 @@
-#include "sunburst.h"
+#include "../sunburst.h"
 #include <stdio.h>
 
 int main(void) {
