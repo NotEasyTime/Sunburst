@@ -4,3 +4,6 @@ nob.old
 build/
 nob_tests
 nob_tests.old
+nob.exe
+nob.exe.old
+*.obj

@@ -3,12 +3,53 @@
 #if defined(__APPLE__)
   #define GL_SILENCE_DEPRECATION 1
   #include <OpenGL/gl3.h>   // Core profile
+#elif defined _WIN32
+  #include <windows.h>  // must precede gl.h so WINGDIAPI/APIENTRY are defined
+  #include <GL/gl.h>
 #else
   #include <GL/gl.h>        // Or your loader on other platforms
 #endif
 
 #include <string.h> // memset
 #include <stdio.h>
+
+#if defined(_WIN32)
+  #include <windows.h>
+  #include <GL/gl.h>
+  #include "sb_gl_loader.h"
+
+  // Map calls to loaded pointers
+  #define glCreateProgram           pglCreateProgram
+  #define glCreateShader            pglCreateShader
+  #define glShaderSource            pglShaderSource
+  #define glCompileShader           pglCompileShader
+  #define glGetShaderiv             pglGetShaderiv
+  #define glGetShaderInfoLog        pglGetShaderInfoLog
+  #define glAttachShader            pglAttachShader
+  #define glLinkProgram             pglLinkProgram
+  #define glGetProgramiv            pglGetProgramiv
+  #define glGetProgramInfoLog       pglGetProgramInfoLog
+  #define glUseProgram              pglUseProgram
+  #define glDeleteShader            pglDeleteShader
+  #define glGenVertexArrays         pglGenVertexArrays
+  #define glBindVertexArray         pglBindVertexArray
+  #define glGenBuffers              pglGenBuffers
+  #define glBindBuffer              pglBindBuffer
+  #define glBufferData              pglBufferData
+  #define glEnableVertexAttribArray pglEnableVertexAttribArray
+  #define glVertexAttribPointer     pglVertexAttribPointer
+  #define glGetIntegerv             pglGetIntegerv
+  #define glDrawArrays              pglDrawArrays
+  #define glBindAttribLocation       pglBindAttribLocation
+
+#elif defined(__APPLE__)
+  #define GL_SILENCE_DEPRECATION 1
+  #include <OpenGL/gl3.h>
+#else
+  #include <GL/gl.h>
+#endif
+
+
 
 static GLuint g_prog = 0;
 static GLuint g_vao  = 0;

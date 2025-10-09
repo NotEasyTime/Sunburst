@@ -134,8 +134,8 @@ public func PollEvents() {
 @_cdecl("WindowShouldClose")
 public func WindowShouldClose() -> Bool { delegateRef.shouldClose }
 
-@_cdecl("DestroyWindow")
-public func DestroyWindow() {
+@_cdecl("CloseWindowSB")
+public func CloseWindowSB() {
     if let win = window {
         win.orderOut(nil)
         win.close()

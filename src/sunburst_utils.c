@@ -1,25 +1,29 @@
 #include "sunburst.h"
-#include <stdio.h>
 
-#if defined(__APPLE__)
+#if defined(_WIN32)
+  #include <windows.h>
+  static double now_seconds(void) {
+      static LARGE_INTEGER freq = {0};
+      if (freq.QuadPart == 0) QueryPerformanceFrequency(&freq);
+      LARGE_INTEGER t; QueryPerformanceCounter(&t);
+      return (double)t.QuadPart / (double)freq.QuadPart;
+  }
+#elif defined(__APPLE__)
   #include <mach/mach_time.h>
+  static double now_seconds(void) {
+      static mach_timebase_info_data_t tb; if (!tb.denom) mach_timebase_info(&tb);
+      uint64_t t = mach_absolute_time();
+      double ns = (double)t * (double)tb.numer / (double)tb.denom;
+      return ns * 1e-9;
+  }
 #else
   #include <time.h>
+  static double now_seconds(void) {
+      struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
+      return (double)ts.tv_sec + (double)ts.tv_nsec * 1e-9;
+  }
 #endif
 
-static double now_seconds(void) {
-#if defined(__APPLE__)
-    static mach_timebase_info_data_t tb;
-    if (!tb.denom) mach_timebase_info(&tb);
-    uint64_t t = mach_absolute_time();
-    double ns = (double)t * (double)tb.numer / (double)tb.denom;
-    return ns * 1e-9;
-#else
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (double)ts.tv_sec + (double)ts.tv_nsec * 1e-9;
-#endif
-}
 
 void PrintFrameRate(void) {
     static double prevTime = 0.0;

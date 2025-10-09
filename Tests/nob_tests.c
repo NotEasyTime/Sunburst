@@ -48,8 +48,26 @@ int main(int argc, char **argv)
 #elif defined(__linux__)
     nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c");
 #elif defined(_MSC_VER)
-    nob_cmd_append(&cmd, "cl", "/Fe:" BUILD_FOLDER "sunburst.exe", SRC_FOLDER "gameEx.c", "/link", "user32.lib", "gdi32.lib");
-    // cl /O2 /std:c11 sunburst_win.c /link user32.lib gdi32.lib
+     // Example
+    nob_cmd_append(&cmd, "cl", "/c", TESTS"gameEx.c",
+        "/Fo:" BUILD_FOLDER "gameEx.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
+    nob_cmd_run(&cmd);
+
+    // Link
+    nob_cmd_append(&cmd,
+        "link",
+        BUILD_FOLDER"b_Win32.obj",
+        BUILD_FOLDER"sb_gl_loader.obj",
+        BUILD_FOLDER"sunburst_draw.obj",
+        BUILD_FOLDER"sunburst_utils.obj",
+        BUILD_FOLDER"gameEx.obj",
+        "opengl32.lib", "gdi32.lib", "user32.lib",
+        "/OUT:" BUILD_FOLDER "sunburst.exe",
+        "/SUBSYSTEM:CONSOLE",
+        "/nologo"
+    );
+
+    nob_cmd_run(&cmd);
 
     #else
     #   error "Unsupported platform"
