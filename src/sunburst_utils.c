@@ -44,3 +44,11 @@ void PrintFrameRate(void) {
         prevTime = current;
     }
 }
+
+void ClearBackground(){
+    int w=0,h=0;
+    GetFramebufferSize(&w,&h);
+    glViewport(0,0,w,h);
+    glClearColor(0.08f,0.09f,0.11f,1.0f);
+    glClear(0x00004000);
+}

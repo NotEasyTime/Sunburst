@@ -1,43 +1,86 @@
 #include "../src/sunburst.h"
-#if defined(__APPLE__)
-  #define GL_SILENCE_DEPRECATION 1
-  #include <OpenGL/gl3.h>
-#elif defined _WIN32
-  #include <windows.h>  // must precede gl.h so WINGDIAPI/APIENTRY are defined
-  #include <GL/gl.h>
-#else
-  #include <GL/gl.h>
-#endif
+#include <math.h>
+# include <stdlib.h>
+
+int WindowWidth = 1600;
+int WindowHeight = 800;
+
+typedef struct Bouncer{
+
+      int x, y, width, height;
+      float dx, dy;
+      int jumpRate;
+      Color c;
+
+    } Bouncer;
+
+  void DrawBouncer(Bouncer *b){
+    DrawRectangle(b->x, b->y, b->width, b->height, b->c);
+  }
+
+
+  void Physics(Bouncer *b) {
+
+    b->dy += 0.5f;
+
+    b->x += b->dx;
+    b->y += b->dy;
+
+    float floorY = WindowHeight - b->height;
+    if (b->y > floorY) {
+        b->y = floorY;
+        b->dy = -b->dy * 0.7f;  
+    }
+}
+
+  void UpdateBouncer(Bouncer *b){
+    Physics(b);
+    DrawBouncer(b);
+  }
 
 int main(void) {
-    InitWindow(800, 600, "Rects");
+
+    /* Good API */
+    InitWindow(WindowWidth, WindowHeight, "Bounce");
+
+    /* Will abstract */
     CreateGLContext();
-    GL_SetSwapInterval(0);
+    GL_SetSwapInterval(1);
+
+    Bouncer bees[10];
+    for(int i = 0; i < 10; i++){
+      bees[i] = (Bouncer){50 + (125 * i),50 - ( i * 300),100,100,0,0,i,(Color){1, i * .1 ,0,1}};
+    }
 
     int i = 0;
+    /* Good API */
     while (!WindowShouldClose()) {
+        /* Will abstract */
         PollEvents();
 
         ++i;
+        if(i > 1000) i = 0;
 
-        int w=0,h=0;
-        GetFramebufferSize(&w,&h);
-        glViewport(0,0,w,h);
-        glClearColor(0.08f,0.09f,0.11f,1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        /* Good API */
+        ClearBackground();
 
-        for(int j = 0; j < 100; ++j){
-            DrawRectangle(20 + i, 20 + j, 160, 100, (Color){1,0,0,1});
-            DrawRectangle(200 + i, 60 + j, 120, 80, (Color){0,1,0,0.7f});
-            DrawRectangle(360 + j, 40 + i, 200, 200, (Color){0.2f,0.6f,1.0f,1});
+        for(int i = 0; i < 10; ++i){
+          if((rand() % 100) == bees[i].jumpRate){
+            bees[i].dy += -5;
+          }
+          UpdateBouncer(&bees[i]);
         }
-
+        
+        /* Will abstract */
         GL_SwapBuffers();
 
         if(i > 800) i = 0;
+
+        /* Good API */
         PrintFrameRate();
 
     }
+    /* Good API */
     CloseWindowSB();
     return 0;
 }

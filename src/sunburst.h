@@ -1,5 +1,14 @@
 #pragma once
 #include <stdbool.h>
+#if defined(__APPLE__)
+  #define GL_SILENCE_DEPRECATION 1
+  #include <OpenGL/gl3.h>
+#elif defined _WIN32
+  #include <windows.h>  // must precede gl.h so WINGDIAPI/APIENTRY are defined
+  #include <GL/gl.h>
+#else
+  #include <GL/gl.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,7 +17,7 @@ extern "C" {
 bool InitWindow(int width, int height, const char* title);
 void PollEvents(void);
 bool WindowShouldClose(void);
-void CloseWindowSB(void);  // <-- renamed (was DestroyWindow)
+void CloseWindowSB(void);  
 
 // Optional helpers
 void SetWindowTitle(const char* title);
@@ -25,6 +34,8 @@ void PrintFrameRate(void);
 // simple 2D drawing
 typedef struct Color { float r, g, b, a; } Color;
 void DrawRectangle(int x, int y, int width, int height, Color color);
+
+void ClearBackground();
 
 #ifdef __cplusplus
 }
