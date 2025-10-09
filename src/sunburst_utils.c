@@ -10,6 +10,7 @@
   }
 #elif defined(__APPLE__)
   #include <mach/mach_time.h>
+  #include <stdio.h>
   static double now_seconds(void) {
       static mach_timebase_info_data_t tb; if (!tb.denom) mach_timebase_info(&tb);
       uint64_t t = mach_absolute_time();
