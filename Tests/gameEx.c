@@ -1,6 +1,5 @@
 #include "../src/sunburst.h"
-#include <math.h>
-# include <stdlib.h>
+#include <stdlib.h>
 
 int WindowWidth = 1600;
 int WindowHeight = 800;
