@@ -1,4 +1,5 @@
 #include "sunburst.h"
+#include "stb_image.h"
 #include <stdlib.h>
 #include <string.h> // memset
 #include <stdio.h>
@@ -73,6 +74,20 @@ static const char* kFS =
 "out vec4 outColor;\n"
 "void main(){ outColor = vColor; }\n";
 
+static const char* vs_tex = 
+"#version 150 core\n"
+"in vec2 pos;\n"
+"in vec2 uv;\n"
+"out vec2 vUV;\n"
+"void main(){ vUV = uv; gl_Position = vec4(pos,0,1); }\n";
+
+static const char* fs_tex =
+"#version 150 core\n"
+"in vec2 vUV;\n"
+"uniform sampler2D tex;\n"
+"out vec4 outColor;\n"
+"void main(){ outColor = texture(tex,vUV); }\n";
+
 static GLuint compile(GLenum type, const char* src) {
     GLuint s = glCreateShader(type);
     glShaderSource(s, 1, &src, NULL);
@@ -100,6 +115,34 @@ static float*   g_batch_data              = NULL;
 
 // Cached framebuffer size for pixel->NDC each frame
 static int g_fbw = 0, g_fbh = 0;
+
+static GLuint texProg = 0, texVAO = 0, texVBO = 0;
+static GLint texSamplerLoc = -1;
+
+static void InitTexturePipeline(void) {
+    GLuint vs = compile(GL_VERTEX_SHADER, vs_tex);
+    GLuint fs = compile(GL_FRAGMENT_SHADER, fs_tex);
+    texProg = glCreateProgram();
+    glAttachShader(texProg, vs);
+    glAttachShader(texProg, fs);
+    glBindAttribLocation(texProg, 0, "pos");
+    glBindAttribLocation(texProg, 1, "uv");
+    glLinkProgram(texProg);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    texSamplerLoc = glGetUniformLocation(texProg, "tex");
+
+    glGenVertexArrays(1, &texVAO);
+    glBindVertexArray(texVAO);
+    glGenBuffers(1, &texVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, texVBO);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)(sizeof(float)*2));
+}
 
 // --- Public-ish API ---------------------------------------------------------
 void RendererInit(void) {
@@ -135,7 +178,7 @@ void RendererInit(void) {
     g_batch_data = (float*)malloc(sizeof(float) * g_batch_capacity_vertices * VERT_STRIDE_FLOATS);
     g_batch_count_vertices = 0;
 
-    // Leave our stuff bound; we own the state.
+    InitTexturePipeline();
 }
 
 void RendererShutdown(void) {
@@ -179,6 +222,72 @@ void End2D(void) {
     FlushBatch();
     GL_SwapBuffers();
     // You may leave program/vao/vbo bound; you own the state.
+}
+
+Texture LoadTexture(const char* path) {
+    Texture t = {0};
+    int n = 0;
+    unsigned char* data = stbi_load(path, &t.width, &t.height, &n, 4); // force RGBA
+    if (!data) {
+        fprintf(stderr, "stb_image: failed to load %s\n", path);
+        return t;
+    }
+
+    glGenTextures(1, &t.id);
+    glBindTexture(GL_TEXTURE_2D, t.id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t.width, t.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    stbi_image_free(data);
+    return t;
+}
+
+void DestroyTexture(Texture* t) {
+    if (t && t->id) {
+        glDeleteTextures(1, &t->id);
+        t->id = 0;
+    }
+}
+
+extern void Flush2D(void);
+extern int g_fbw, g_fbh;
+
+void DrawTexture(Texture* tex, int x, int y, int w, int h, bool flipY) {
+    if (!tex || !tex->id) return;
+    if (w <= 0) w = tex->width;
+    if (h <= 0) h = tex->height;
+
+    Flush2D(); // flush batched rectangles
+
+    float L =  2.0f * ((float)x / g_fbw) - 1.0f;
+    float R =  2.0f * ((float)(x + w) / g_fbw) - 1.0f;
+    float T =  1.0f - 2.0f * ((float)y / g_fbh);
+    float B =  1.0f - 2.0f * ((float)(y + h) / g_fbh);
+
+    float u0 = 0.0f, v0 = flipY ? 1.0f : 0.0f;
+    float u1 = 1.0f, v1 = flipY ? 0.0f : 1.0f;
+
+    float quad[6*4] = {
+        L,T,u0,v0,  L,B,u0,v1,  R,T,u1,v0,
+        R,T,u1,v0,  L,B,u0,v1,  R,B,u1,v1
+    };
+
+    glUseProgram(texProg);
+    glBindVertexArray(texVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, texVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STREAM_DRAW);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex->id);
+    glUniform1i(texSamplerLoc, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // restore rectangle pipeline
+    glUseProgram(g_prog);
+    glBindVertexArray(g_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
 }
 
 // --- Helpers ----------------------------------------------------------------

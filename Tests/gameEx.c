@@ -4,6 +4,7 @@
 int WindowWidth = 1600;
 int WindowHeight = 800;
 int fbw, fbh;
+Texture bee;
 
 typedef struct Bouncer{
 
@@ -15,7 +16,7 @@ typedef struct Bouncer{
     } Bouncer;
 
   void DrawBouncer(Bouncer *b){
-    DrawRectangle(b->x, b->y, b->width, b->height, b->c);
+    DrawTexture(&bee, b->x, b->y, b->width, b->height, true);
   }
 
 
@@ -49,11 +50,14 @@ int main(void) {
     /* Will abstract */
     CreateGLContext();
     GL_SetSwapInterval(1);
+
     RendererInit();
 
-    Bouncer bees[1000];
-    for(int i = 0; i < 1000; i++){
-      bees[i] = (Bouncer){5 + (12 * i),5 - ( i * 30),10,10,0,0,i,(Color){1, i * .01 ,i * .001,1}};
+    bee = LoadTexture("bee.png");
+
+    Bouncer bees[20];
+    for(int i = 0; i < 20; i++){
+      bees[i] = (Bouncer){50 + (120 * i),50 - ( i * 30),100,100,0,0,i,(Color){1, i * .01 ,i * .001,1}};
     }
 
     int i = 0;
@@ -71,8 +75,8 @@ int main(void) {
 
         
         GetFramebufferSize(&fbw, &fbh);
-        for(int i = 0; i < 1000; ++i){
-          if((rand() % 1000) == bees[i].jumpRate){
+        for(int i = 0; i < 20; ++i){
+          if((rand() % 100) == bees[i].jumpRate){
             bees[i].dy += -5;
           }
           UpdateBouncer(&bees[i]);
@@ -85,6 +89,7 @@ int main(void) {
 
     }
     /* Good API */
+    DestroyTexture(&bee);
     RendererShutdown();
     CloseWindowSB();
     return 0;

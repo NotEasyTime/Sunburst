@@ -14,6 +14,12 @@
 extern "C" {
 #endif
 
+typedef struct Texture {
+    GLuint id;
+    int width;
+    int height;
+} Texture;
+
 bool InitWindow(int width, int height, const char* title);
 void PollEvents(void);
 bool WindowShouldClose(void);
@@ -41,6 +47,10 @@ void Begin2D(void);
 void End2D(void);
 void RendererInit(void);
 void RendererShutdown(void);
+Texture LoadTexture(const char*);
+void DestroyTexture(Texture*);
+void DrawTexture(Texture*, int, int, int, int, bool);
+
 
 #ifdef __cplusplus
 }

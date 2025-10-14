@@ -50,10 +50,17 @@ int main(int argc, char **argv)
         BUILD_FOLDER"sunburst.o"
     );
     nob_cmd_run(&cmd);
-     nob_cmd_append(&cmd,
+    nob_cmd_append(&cmd,
         "clang", "-c",
         SRC_FOLDER"sunburst_draw.c",
         "-o", BUILD_FOLDER"sunburst_draw.o",
+        "-DGL_SILENCE_DEPRECATION"
+    );
+    nob_cmd_run(&cmd);
+    nob_cmd_append(&cmd,
+        "clang", "-c",
+        SRC_FOLDER"sunburst_image.c",
+        "-o", BUILD_FOLDER"sunburst_image.o",
         "-DGL_SILENCE_DEPRECATION"
     );
     nob_cmd_run(&cmd);
