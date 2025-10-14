@@ -49,7 +49,7 @@ int main(void) {
 
     /* Will abstract */
     CreateGLContext();
-    GL_SetSwapInterval(1);
+    GL_SetSwapInterval(0);
 
     RendererInit();
 
