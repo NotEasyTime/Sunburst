@@ -11,11 +11,10 @@ private var glView: GLView?
 private var glContext: NSOpenGLContext?
 
 final class GLView: NSOpenGLView {
-    // Create a 3.2 core profile, double-buffered, 24-bit depth
     static func makePixelFormat() -> NSOpenGLPixelFormat? {
         let attrs: [NSOpenGLPixelFormatAttribute] = [
             UInt32(NSOpenGLPFAAccelerated),
-            UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion3_2Core),
+            UInt32(NSOpenGLPFAOpenGLProfile), UInt32(NSOpenGLProfileVersion4_1Core), // <- was 3_2Core
             UInt32(NSOpenGLPFADoubleBuffer),
             UInt32(NSOpenGLPFAColorSize), 24,
             UInt32(NSOpenGLPFADepthSize), 24,
@@ -26,9 +25,7 @@ final class GLView: NSOpenGLView {
 
     override func prepareOpenGL() {
         super.prepareOpenGL()
-        // Enable HiDPI rendering
         self.wantsBestResolutionOpenGLSurface = true
-        // Default to vsync on (swap interval 1)
         var one: GLint = 1
         self.openGLContext?.setValues(&one, for: .swapInterval)
     }

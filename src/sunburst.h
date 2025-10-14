@@ -34,8 +34,13 @@ void PrintFrameRate(void);
 // simple 2D drawing
 typedef struct Color { float r, g, b, a; } Color;
 void DrawRectangle(int x, int y, int width, int height, Color color);
+void DrawTriangle(int ax, int ay, int bx, int by, int cx, int cy, Color color);
 
 void ClearBackground();
+void Begin2D(void);
+void End2D(void);
+void RendererInit(void);
+void RendererShutdown(void);
 
 #ifdef __cplusplus
 }
