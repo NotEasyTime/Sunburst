@@ -104,7 +104,6 @@ void SB_InputPushUTF32(unsigned codepoint);
 // simple 2D drawing
 typedef struct Color { float r, g, b, a; } Color;
 void DrawRectangle(int x, int y, int width, int height, Color color);
-void DrawTriangle(int ax, int ay, int bx, int by, int cx, int cy, Color color);
 
 void ClearBackground();
 void Begin2D(void);
