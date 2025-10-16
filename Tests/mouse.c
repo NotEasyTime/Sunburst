@@ -10,11 +10,15 @@ int main(){
     GL_SetSwapInterval(1);
     RendererInit();
 
+    Rectangle r = (Rectangle){50,50,150,150};
+
 
     while(!WindowShouldClose()){
 
         InputBeginFrame();
         PollEvents();
+
+        if (IsKeyPressed(KEY_ESCAPE)) return 0;
 
         int mx, my;
         GetMousePosition(&mx, &my);
@@ -22,11 +26,7 @@ int main(){
         Begin2D();
         ClearBackground();
 
-        if(mx > 299){
-            DrawRectangle(250,300,50,50,(Color){0,0,1,1});
-        } else {
-            DrawRectangle(250,300,50,50,(Color){1,0,0,1});
-        }
+        DrawRectangleRect(&r, (Color){0,1,0,1});
 
         End2D();
 

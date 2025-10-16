@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+typedef struct Color { float r, g, b, a; } Color;
+
 typedef struct {
     GLuint id;
     int width;
@@ -102,8 +104,8 @@ void SB_InputPushUTF32(unsigned codepoint);
 
 
 // simple 2D drawing
-typedef struct Color { float r, g, b, a; } Color;
-void DrawRectangle(int x, int y, int width, int height, Color color);
+void DrawRectangle(int, int, int, int, Color);
+static inline void DrawRectangleRect(Rectangle* r, Color c){ DrawRectangle(r->x, r->y, r->width, r->height, c); }
 
 void ClearBackground();
 void Begin2D(void);
