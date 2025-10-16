@@ -88,6 +88,10 @@ int main(int argc, char **argv)
     nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_draw.c",
         "/Fo:" BUILD_FOLDER "sunburst_draw.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
     nob_cmd_run(&cmd);
+    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_image.c",
+        "/Fo:" BUILD_FOLDER "sunburst_image.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
+    nob_cmd_run(&cmd);
+
 
     nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_utils.c",
         "/Fo:" BUILD_FOLDER "sunburst_utils.obj", "/std:c11", "/O2", "/EHsc", "/nologo");

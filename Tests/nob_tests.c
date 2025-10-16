@@ -60,6 +60,7 @@ int main(int argc, char **argv)
         BUILD_FOLDER"b_Win32.obj",
         BUILD_FOLDER"sb_gl_loader.obj",
         BUILD_FOLDER"sunburst_draw.obj",
+        BUILD_FOLDER"sunburst_image.obj",
         BUILD_FOLDER"sunburst_utils.obj",
         BUILD_FOLDER"gameEx.obj",
         "opengl32.lib", "gdi32.lib", "user32.lib",

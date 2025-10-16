@@ -27,6 +27,17 @@ PFNGLGETINTEGERVPROC              pglGetIntegerv;
 PFNGLDRAWARRAYSPROC               pglDrawArrays;
 PFNGLBINDATTRIBLOCATIONPROC       pglBindAttribLocation;
 
+PFNGLDELETEBUFFERSPROC           pglDeleteBuffers;
+PFNGLDELETEVERTEXARRAYSPROC      pglDeleteVertexArrays;
+PFNGLBUFFERSUBDATAPROC           pglBufferSubData;
+PFNGLDRAWELEMENTSPROC            pglDrawElements;
+PFNGLGETUNIFORMLOCATIONPROC      pglGetUniformLocation;
+PFNGLUNIFORM1IPROC               pglUniform1i;
+PFNGLACTIVETEXTUREPROC           pglActiveTexture;
+PFNGLDELETEPROGRAMPROC pglDeleteProgram;
+
+
+
 static void* get_proc_addr(const char* name) {
     void* p = (void*)wglGetProcAddress(name);
     if (!p) {
@@ -56,6 +67,7 @@ bool sbgl_load_win32(void) {
     if (!load_fn((void**)&pglGetProgramInfoLog,       "glGetProgramInfoLog")) return false;
     if (!load_fn((void**)&pglUseProgram,              "glUseProgram")) return false;
     if (!load_fn((void**)&pglDeleteShader,            "glDeleteShader")) return false;
+    if (!load_fn((void**)&pglDeleteProgram, "glDeleteProgram")) return false;
 
     // VAO
     if (!load_fn((void**)&pglGenVertexArrays,         "glGenVertexArrays")) return false;
@@ -73,6 +85,14 @@ bool sbgl_load_win32(void) {
     if (!load_fn((void**)&pglDrawArrays,              "glDrawArrays")) return false;
 
     if (!load_fn((void**)&pglBindAttribLocation,       "glBindAttribLocation")) return false;
+
+    if (!load_fn((void**)&pglDeleteBuffers,       "glDeleteBuffers")) return false;
+    if (!load_fn((void**)&pglDeleteVertexArrays,  "glDeleteVertexArrays")) return false;
+    if (!load_fn((void**)&pglBufferSubData,       "glBufferSubData")) return false;
+    if (!load_fn((void**)&pglDrawElements,        "glDrawElements")) return false;
+    if (!load_fn((void**)&pglGetUniformLocation,  "glGetUniformLocation")) return false;
+    if (!load_fn((void**)&pglUniform1i,           "glUniform1i")) return false;
+    if (!load_fn((void**)&pglActiveTexture,       "glActiveTexture")) return false;
 
     return true;
 }
