@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdint.h>
-#include "sunburst.h"   // replace with your real header
+#include <stdbool.h>
+#include "sunburst.h" 
 
 // ---------- Internal state ----------
 static uint8_t  gKeyNow[KEY_COUNT], gKeyPrev[KEY_COUNT];

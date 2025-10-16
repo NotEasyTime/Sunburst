@@ -31,13 +31,13 @@
 
 // ------------------------- Types --------------------------
 typedef struct {
-    Rectangle rect;
+    Rect rect;
     float vx, vy;
     int alive;
 } Enemy;
 
 typedef struct {
-    Rectangle rect;
+    Rect rect;
     float vx, vy;
     int alive;
 } Bullet;
@@ -47,7 +47,7 @@ typedef enum { STATE_PLAYING, STATE_DEAD } GameState;
 // ------------------------- Globals ------------------------
 static Enemy  g_enemies[MAX_ENEMIES];
 static Bullet g_bullets[MAX_BULLETS];
-static Rectangle g_player;
+static Rect g_player;
 static int g_wave = 1;
 static int g_score = 0;
 static int g_lives = 1;
@@ -66,14 +66,14 @@ static float frand(float a, float b) {
     return a + (float)rand() / (float)RAND_MAX * (b - a);
 }
 
-static void clamp_rect_to_screen(Rectangle* r, int w, int h) {
+static void clamp_rect_to_screen(Rect* r, int w, int h) {
     if (r->x < 0) r->x = 0;
     if (r->y < 0) r->y = 0;
     if (r->x + r->width > w)  r->x = (float)w  - r->width;
     if (r->y + r->height > h) r->y = (float)h  - r->height;
 }
 
-static void spawn_enemy_outside_player(Rectangle player, int fbw, int fbh) {
+static void spawn_enemy_outside_player(Rect player, int fbw, int fbh) {
     // Find a free enemy slot
     int idx = -1;
     for (int i = 0; i < MAX_ENEMIES; i++) {
@@ -291,7 +291,7 @@ int main(void) {
                     if (!g_bullets[b].alive) continue;
                     if (CheckRectsOverlap(&g_bullets[b].rect, &g_enemies[e].rect)) {
                         // For fun: shrink enemy on hit using overlap
-                        Rectangle overlap;
+                        Rect overlap;
                         GetRectOverlap(&g_bullets[b].rect, &g_enemies[e].rect, &overlap);
 
                         // Shrink enemy by overlap area heuristic; if too small, kill
@@ -368,8 +368,7 @@ int main(void) {
         }
 
         if (g_state == STATE_DEAD) {
-            // Big center panel
-            int w = 360, h = 160;
+            // Big center panelw
             int x = fbw/2 - w/2, y = fbh/2 - h/2;
             DrawRectangle(x, y, w, h, (Color){0.08f, 0.08f, 0.12f, 0.95f});
             DrawRectangle(x+12, y+12, w-24, h-24, COL_HIT);

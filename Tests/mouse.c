@@ -10,7 +10,7 @@ int main(){
     GL_SetSwapInterval(1);
     RendererInit();
 
-    Rectangle r = (Rectangle){50,50,150,150};
+    Rect r = (Rect){50,50,150,150};
 
 
     while(!WindowShouldClose()){

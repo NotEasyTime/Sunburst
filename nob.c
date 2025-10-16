@@ -93,6 +93,9 @@ int main(int argc, char **argv)
     nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_draw.c",
         "/Fo:" BUILD_FOLDER "sunburst_draw.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
     nob_cmd_run(&cmd);
+    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_input.c",
+        "/Fo:" BUILD_FOLDER "sunburst_input.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
+    nob_cmd_run(&cmd);
     nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_image.c",
         "/Fo:" BUILD_FOLDER "sunburst_image.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
     nob_cmd_run(&cmd);
@@ -151,6 +154,7 @@ int main(int argc, char **argv)
                 BUILD_FOLDER"b_Win32.obj",
                 BUILD_FOLDER"sb_gl_loader.obj",
                 BUILD_FOLDER"sunburst_draw.obj",
+                BUILD_FOLDER"sunburst_input.obj",
                 BUILD_FOLDER"sunburst_image.obj",
                 BUILD_FOLDER"sunburst.obj",
                 BUILD_FOLDER"gameEx.obj",

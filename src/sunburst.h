@@ -60,7 +60,9 @@ typedef enum Key {
     KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN,
     KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_SUPER,   // generic modifiers
     KEY_PAGEUP, KEY_PAGEDOWN, KEY_HOME, KEY_END, KEY_INSERT, KEY_DELETE,
-    KEY_COUNT
+    KEY_COUNT,
+    KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
+    KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12,
 } Key;
 
 typedef enum MouseButton {
@@ -101,6 +103,7 @@ void SB_InputSetMouse(int /*MouseButton*/ b, int down);
 void SB_InputSetMousePos(int x, int y);
 void SB_InputAddWheel(int delta);
 void SB_InputPushUTF32(unsigned codepoint);
+
 
 
 // simple 2D drawing
