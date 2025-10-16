@@ -63,27 +63,27 @@ extern void GL_SwapBuffers(void);
 // -----------------------------------------------------------------------------
 // Shaders
 static const char* s_rectVS =
-"#version 150 core\n"
+"#version 330 core\n"
 "in vec2 pos;\n"
 "in vec4 inColor;\n"
 "out vec4 vColor;\n"
 "void main(){ vColor = inColor; gl_Position = vec4(pos, 0.0, 1.0); }\n";
 
 static const char* s_rectFS =
-"#version 150 core\n"
+"#version 330 core\n"
 "in vec4 vColor;\n"
 "out vec4 outColor;\n"
 "void main(){ outColor = vColor; }\n";
 
 static const char* s_texVS =
-"#version 150 core\n"
+"#version 330 core\n"
 "in vec2 pos;\n"
 "in vec2 uv;\n"
 "out vec2 vUV;\n"
 "void main(){ vUV = uv; gl_Position = vec4(pos, 0.0, 1.0); }\n";
 
 static const char* s_texFS =
-"#version 150 core\n"
+"#version 330 core\n"
 "in vec2 vUV;\n"
 "uniform sampler2D tex;\n"
 "out vec4 outColor;\n"
