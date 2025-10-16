@@ -172,7 +172,7 @@ int main(void) {
         // --- Erase (right click) — removes most recent overlapping stroke ---
         if (IsMouseDown(MOUSE_RIGHT) && strokes.index > 0) {
             // simple "eraser": pop last stroke that intersects the cursor
-            for (ssize_t i = (ssize_t)strokes.index - 1; i >= 0; --i) {
+            for (size_t i = (size_t)strokes.index - 1; i >= 0; --i) {
                 Stroke tmp;
                 if (container_get_copy(&strokes, (size_t)i, &tmp)) {
                     bool overlap =
