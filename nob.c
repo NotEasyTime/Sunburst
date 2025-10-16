@@ -13,20 +13,13 @@ int main(int argc, char **argv)
     // runs it again.
     NOB_GO_REBUILD_URSELF(argc, argv);
 
-    // It's better to keep all the building artifacts in a separate build folder. Let's create it if it
-    // does not exist yet.
-    //
-    // Majority of the nob command return bool which indicates whether operation has failed or not (true -
-    // success, false - failure). If the operation returned false you don't need to log anything, the
-    // convention is usually that the function logs what happened to itself. Just do
-    // `if (!nob_function()) return;`
+    
     if (!nob_mkdir_if_not_exists(BUILD_FOLDER)) return 1;
 
-    // The working horse of nob is the Nob_Cmd structure. It's a Dynamic Array of strings which represent
-    // command line that you want to execute.
+    // A Dynamic Array of strings which represent the command line that you want to execute.
     Nob_Cmd cmd = {0};
 
-    // Let's append the command line arguments
+    // Append the command line arguments per platform 
 #if defined(__APPLE__)
     nob_cmd_append(&cmd,
         "clang", "-c",
@@ -113,11 +106,6 @@ int main(int argc, char **argv)
     #else
     #   error "Unsupported platform"
 #endif // _MSC_VER
-
-    // Let's execute the command.
-    // if (!nob_cmd_run(&cmd)) return 1;
-    // nob_cmd_run() automatically resets the cmd array, so you can nob_cmd_append() more strings
-    // into it.
 
     return 0;
 }
