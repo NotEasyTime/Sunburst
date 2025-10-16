@@ -369,6 +369,8 @@ int main(void) {
 
         if (g_state == STATE_DEAD) {
             // Big center panelw
+            int w = 100;
+            int h = 100;
             int x = fbw/2 - w/2, y = fbh/2 - h/2;
             DrawRectangle(x, y, w, h, (Color){0.08f, 0.08f, 0.12f, 0.95f});
             DrawRectangle(x+12, y+12, w-24, h-24, COL_HIT);
