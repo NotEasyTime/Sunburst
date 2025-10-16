@@ -49,22 +49,24 @@ int main(void) {
 
     /* Will abstract */
     CreateGLContext();
-    GL_SetSwapInterval(0);
+    GL_SetSwapInterval(1);
 
     RendererInit();
 
     bee = LoadTexture("bee.png");
 
-    Bouncer bees[20];
-    for(int i = 0; i < 20; i++){
-      bees[i] = (Bouncer){50 + (120 * i),50 - ( i * 30),100,100,0,0,i,(Color){1, i * .01 ,i * .001,1}};
-    }
+    Bouncer beeb = (Bouncer){50 + (120 ),50 - ( 30),100,100,0,0,0,(Color){1, 0 ,0,1}};
+    
 
     int i = 0;
     /* Good API */
     while (!WindowShouldClose()) {
         /* Will abstract */
+        InputBeginFrame(); 
         PollEvents();
+
+        if (IsKeyPressed(KEY_ESCAPE)) return 0;
+        if (IsKeyPressed(KEY_SPACE)) beeb.dy = -10;
 
         ++i;
         if(i > 1000) i = 0;
@@ -75,12 +77,9 @@ int main(void) {
 
         
         GetFramebufferSize(&fbw, &fbh);
-        for(int i = 0; i < 20; ++i){
-          if((rand() % 100) == bees[i].jumpRate){
-            bees[i].dy += -5;
-          }
-          UpdateBouncer(&bees[i]);
-        }
+        
+        UpdateBouncer(&beeb);
+        
 
         End2D();
 

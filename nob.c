@@ -28,26 +28,10 @@ int main(int argc, char **argv)
 
     // Let's append the command line arguments
 #if defined(__APPLE__)
-    // --- Compile Swift source into object ---
     nob_cmd_append(&cmd,
-        "swiftc",
-        "-emit-object",
-        "-parse-as-library",
-        "-Ounchecked",
-        "-sdk", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
-        "-framework", "AppKit",
-        "-framework", "OpenGL",        // needed for NSOpenGLContext
-        "-o", BUILD_FOLDER"sunburst.o",
-        IMPLNTS"b_AppKit.swift"
-    );
-    nob_cmd_run(&cmd);
-
-    // --- Archive to static lib ---
-    nob_cmd_append(&cmd,
-        "libtool",
-        "-static",
-        "-o", BUILD_FOLDER"sunburst.a",
-        BUILD_FOLDER"sunburst.o"
+        "clang", "-c",
+        SRC_FOLDER"sunburst_input.c",
+        "-o", BUILD_FOLDER"sunburst_input.o",
     );
     nob_cmd_run(&cmd);
     nob_cmd_append(&cmd,
@@ -68,6 +52,34 @@ int main(int argc, char **argv)
         "clang", "-c",
         SRC_FOLDER"sunburst_utils.c",
         "-o", BUILD_FOLDER"sunburst_utils.o"
+    );
+    nob_cmd_run(&cmd);
+    // --- Compile Swift source into object ---
+    nob_cmd_append(&cmd,
+        "swiftc",
+        "-emit-object",
+        "-parse-as-library",
+        "-Ounchecked",
+        "-sdk", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-framework", "AppKit",
+        "-framework", "OpenGL",
+        "-import-objc-header", "src/bridge.h",
+        "-Xcc", "-I", "-Xcc", "src/",   // <<< FIXED: was 'scr/'
+        "-o", "build/sunburst_swift.o",
+        "implements/b_AppKit.swift"
+    );
+    nob_cmd_run(&cmd);
+
+    // --- Archive to static lib ---
+    nob_cmd_append(&cmd,
+        "libtool",
+        "-static",
+        "-o", BUILD_FOLDER"sunburst.a",
+        BUILD_FOLDER"sunburst_swift.o",   // <- corrected name
+        BUILD_FOLDER"sunburst_input.o",
+        BUILD_FOLDER"sunburst_draw.o",
+        BUILD_FOLDER"sunburst_image.o",
+        BUILD_FOLDER"sunburst_utils.o"
     );
     nob_cmd_run(&cmd);
 #elif defined(__linux__)

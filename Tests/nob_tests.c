@@ -36,6 +36,7 @@ int main(int argc, char **argv)
         BUILD_FOLDER"gameEx.o",
         BUILD_FOLDER"sunburst_draw.o",
         BUILD_FOLDER"sunburst_image.o",
+        BUILD_FOLDER"sunburst_input.o",
         BUILD_FOLDER"sunburst_utils.o",
         BUILD_FOLDER"sunburst.a",
         "-framework", "AppKit",
