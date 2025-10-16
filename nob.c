@@ -43,8 +43,8 @@ int main(int argc, char **argv)
     nob_cmd_run(&cmd);
     nob_cmd_append(&cmd,
         "clang", "-c",
-        SRC_FOLDER"sunburst_utils.c",
-        "-o", BUILD_FOLDER"sunburst_utils.o"
+        SRC_FOLDER"sunburst.c",
+        "-o", BUILD_FOLDER"sunburst.o"
     );
     nob_cmd_run(&cmd);
     // --- Compile Swift source into object ---
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
         BUILD_FOLDER"sunburst_input.o",
         BUILD_FOLDER"sunburst_draw.o",
         BUILD_FOLDER"sunburst_image.o",
-        BUILD_FOLDER"sunburst_utils.o"
+        BUILD_FOLDER"sunburst.o"
     );
     nob_cmd_run(&cmd);
 #elif defined(__linux__)
@@ -98,8 +98,8 @@ int main(int argc, char **argv)
     nob_cmd_run(&cmd);
 
 
-    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_utils.c",
-        "/Fo:" BUILD_FOLDER "sunburst_utils.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
+    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst.c",
+        "/Fo:" BUILD_FOLDER "sunburst.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
     nob_cmd_run(&cmd);
 
 
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
             BUILD_FOLDER"sunburst_draw.o",
             BUILD_FOLDER"sunburst_image.o",
             BUILD_FOLDER"sunburst_input.o",
-            BUILD_FOLDER"sunburst_utils.o",
+            BUILD_FOLDER"sunburst.o",
             BUILD_FOLDER"sunburst.a",
             "-framework", "AppKit",
             "-framework", "OpenGL",
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
                 BUILD_FOLDER"sb_gl_loader.obj",
                 BUILD_FOLDER"sunburst_draw.obj",
                 BUILD_FOLDER"sunburst_image.obj",
-                BUILD_FOLDER"sunburst_utils.obj",
+                BUILD_FOLDER"sunburst.obj",
                 BUILD_FOLDER"gameEx.obj",
                 "opengl32.lib", "gdi32.lib", "user32.lib",
                 "/OUT:" BUILD_FOLDER "sunburst.exe",

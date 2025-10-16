@@ -14,11 +14,18 @@
 extern "C" {
 #endif
 
-typedef struct Texture {
+typedef struct {
     GLuint id;
     int width;
     int height;
 } Texture;
+
+typedef struct {
+    float x;
+    float y;
+    float width;
+    float height;
+} Rectangle;
 
 bool InitWindow(int width, int height, const char* title);
 void PollEvents(void);
@@ -107,6 +114,10 @@ void RendererShutdown(void);
 Texture LoadTexture(const char*);
 void DestroyTexture(Texture*);
 void DrawTexture(Texture*, int, int, int, int, bool);
+
+int GetRectOverlap(const Rectangle* a, const Rectangle* b, Rectangle*);
+int CheckRectPoint(const Rectangle*, float, float);
+int CheckRectsOverlap(const Rectangle*, const Rectangle*);
 
 
 #ifdef __cplusplus

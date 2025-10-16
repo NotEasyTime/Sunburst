@@ -1,5 +1,36 @@
 #include "sunburst.h"
 
+int CheckRectsOverlap(const Rectangle* a, const Rectangle* b) {
+    if (!a || !b) return 0;
+    return !(a->x + a->width  <= b->x ||
+             b->x + b->width  <= a->x ||
+             a->y + a->height <= b->y ||
+             b->y + b->height <= a->y);
+}
+
+int CheckRectPoint(const Rectangle* r, float px, float py) {
+    if (!r) return 0;
+    return (px >= r->x && px <= r->x + r->width &&
+            py >= r->y && py <= r->y + r->height);
+}
+
+int GetRectOverlap(const Rectangle* a, const Rectangle* b, Rectangle* result) {
+    if (!a || !b || !result) return 0;
+
+    if (!CheckRectsOverlap(a, b)) return 0;
+
+    float x1 = (a->x > b->x) ? a->x : b->x;
+    float y1 = (a->y > b->y) ? a->y : b->y;
+    float x2 = ((a->x + a->width)  < (b->x + b->width))  ? (a->x + a->width)  : (b->x + b->width);
+    float y2 = ((a->y + a->height) < (b->y + b->height)) ? (a->y + a->height) : (b->y + b->height);
+
+    result->x = x1;
+    result->y = y1;
+    result->width  = x2 - x1;
+    result->height = y2 - y1;
+    return 1;
+}
+
 #if defined(_WIN32)
   #include <windows.h>
   static double now_seconds(void) {
