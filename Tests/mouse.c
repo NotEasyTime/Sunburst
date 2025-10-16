@@ -22,6 +22,7 @@ int main(){
 
         int mx, my;
         GetMousePosition(&mx, &my);
+        r.x = (int)mx; r.y = (int)my;
 
         Begin2D();
         ClearBackground();
