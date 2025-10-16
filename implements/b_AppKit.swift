@@ -38,13 +38,6 @@ enum MB { // MouseButton
     static let X2: Int32 = 4
 }
 
-// C functions are imported via bridging header (no @_silgen_name needed):
-// void SB_InputSetKey(int k, int down);
-// void SB_InputSetMouse(int b, int down);
-// void SB_InputSetMousePos(int x, int y);
-// void SB_InputAddWheel(int delta);
-// void SB_InputPushUTF32(unsigned cp);
-
 // -----------------------------------------------------------------------------
 // Window delegate / globals
 // -----------------------------------------------------------------------------
@@ -177,8 +170,30 @@ final class GLView: NSOpenGLView {
     // Mouse
     private func toViewPoint(_ e: NSEvent) -> NSPoint { convert(e.locationInWindow, from: nil) }
     private func sendPos(_ e: NSEvent) {
-        let p = toViewPoint(e)
-        SB_InputSetMousePos(Int32(p.x), Int32(p.y))
+        // location in view coords (points)
+        let p = convert(e.locationInWindow, from: nil)
+
+        // pick a reliable scale (window if present, else screen)
+        let scale = window?.backingScaleFactor
+                 ?? self.window?.screen?.backingScaleFactor
+                 ?? NSScreen.main?.backingScaleFactor
+                 ?? 1.0
+
+        // convert to pixel coords
+        let px = Int32((p.x * scale).rounded(.down))
+        let py = Int32((p.y * scale).rounded(.down))
+
+        let fbH = Int32((bounds.size.height * scale).rounded(.down))
+        let pyFlipped = fbH - 1 - py
+        SB_InputSetMousePos(px, pyFlipped)
+    }
+
+    // If the backing scale changes (window moved between screens),
+    // keep the GL surface sharp and viewport correct.
+    override func viewDidChangeBackingProperties() {
+        super.viewDidChangeBackingProperties()
+        wantsBestResolutionOpenGLSurface = true
+        reshape() // refresh glViewport with new pixel size
     }
 
     override func mouseMoved(with event: NSEvent)            { sendPos(event) }
