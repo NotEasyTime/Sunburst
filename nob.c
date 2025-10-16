@@ -141,7 +141,7 @@ int main(int argc, char **argv)
             nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c");
         #elif defined(_MSC_VER)
             // Example
-            nob_cmd_append(&cmd, "cl", "/c", TESTS"gameEx.c",
+            nob_cmd_append(&cmd, "cl", "/c", argv[1],
                 "/Fo:" BUILD_FOLDER "gameEx.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
             nob_cmd_run(&cmd);
 
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
                 BUILD_FOLDER"sunburst.obj",
                 BUILD_FOLDER"gameEx.obj",
                 "opengl32.lib", "gdi32.lib", "user32.lib",
-                "/OUT:" BUILD_FOLDER "sunburst.exe",
+                "/OUT:" BUILD_FOLDER "game.exe",
                 "/SUBSYSTEM:CONSOLE",
                 "/nologo"
             );

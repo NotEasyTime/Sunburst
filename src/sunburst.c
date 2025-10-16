@@ -1,6 +1,6 @@
 #include "sunburst.h"
 
-int CheckRectsOverlap(const Rectangle* a, const Rectangle* b) {
+int CheckRectsOverlap(const Rect* a, const Rect* b) {
     if (!a || !b) return 0;
     return !(a->x + a->width  <= b->x ||
              b->x + b->width  <= a->x ||
@@ -8,13 +8,13 @@ int CheckRectsOverlap(const Rectangle* a, const Rectangle* b) {
              b->y + b->height <= a->y);
 }
 
-int CheckRectPoint(const Rectangle* r, float px, float py) {
+int CheckRectPoint(const Rect* r, float px, float py) {
     if (!r) return 0;
     return (px >= r->x && px <= r->x + r->width &&
             py >= r->y && py <= r->y + r->height);
 }
 
-int GetRectOverlap(const Rectangle* a, const Rectangle* b, Rectangle* result) {
+int GetRectOverlap(const Rect* a, const Rect* b, Rect* result) {
     if (!a || !b || !result) return 0;
 
     if (!CheckRectsOverlap(a, b)) return 0;

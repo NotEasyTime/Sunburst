@@ -27,7 +27,7 @@ typedef struct {
     float y;
     float width;
     float height;
-} Rectangle;
+} Rect;
 
 bool InitWindow(int width, int height, const char* title);
 void PollEvents(void);
@@ -105,7 +105,7 @@ void SB_InputPushUTF32(unsigned codepoint);
 
 // simple 2D drawing
 void DrawRectangle(int, int, int, int, Color);
-static inline void DrawRectangleRect(Rectangle* r, Color c){ DrawRectangle(r->x, r->y, r->width, r->height, c); }
+static inline void DrawRectangleRect(Rect* r, Color c){ DrawRectangle(r->x, r->y, r->width, r->height, c); }
 
 void ClearBackground();
 void Begin2D(void);
@@ -116,9 +116,9 @@ Texture LoadTexture(const char*);
 void DestroyTexture(Texture*);
 void DrawTexture(Texture*, int, int, int, int, bool);
 
-int GetRectOverlap(const Rectangle* a, const Rectangle* b, Rectangle*);
-int CheckRectPoint(const Rectangle*, float, float);
-int CheckRectsOverlap(const Rectangle*, const Rectangle*);
+int GetRectOverlap(const Rect* a, const Rect* b, Rect*);
+int CheckRectPoint(const Rect*, float, float);
+int CheckRectsOverlap(const Rect*, const Rect*);
 
 
 #ifdef __cplusplus
