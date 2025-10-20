@@ -1,177 +1,93 @@
 #define NOB_IMPLEMENTATION
 #include "nob.h"
 
-// Some folder paths that we use throughout the build process.
-#define BUILD_FOLDER "build/"
-#define SRC_FOLDER   "src/"
-#define IMPLNTS      "implements/"
-#define TESTS        "tests/"
-
-int main(int argc, char **argv)
-{
-    // This line enables the self-rebuilding. It detects when nob.c is updated and auto rebuilds it then
-    // runs it again.
+int main(int argc, char **argv) {
     NOB_GO_REBUILD_URSELF(argc, argv);
+    if (!nob_mkdir_if_not_exists("build")) return 1;
 
-    
-    if (!nob_mkdir_if_not_exists(BUILD_FOLDER)) return 1;
-
-    // A Dynamic Array of strings which represent the command line that you want to execute.
     Nob_Cmd cmd = {0};
 
-    // Append the command line arguments per platform 
 #if defined(__APPLE__)
-    nob_cmd_append(&cmd,
-        "clang", "-c",
-        SRC_FOLDER"sunburst_input.c",
-        "-o", BUILD_FOLDER"sunburst_input.o",
-    );
-    nob_cmd_run(&cmd);
-    nob_cmd_append(&cmd,
-        "clang", "-c",
-        SRC_FOLDER"sunburst_draw.c",
-        "-o", BUILD_FOLDER"sunburst_draw.o",
-        "-DGL_SILENCE_DEPRECATION"
-    );
-    nob_cmd_run(&cmd);
-    nob_cmd_append(&cmd,
-        "clang", "-c",
-        SRC_FOLDER"sunburst_image.c",
-        "-o", BUILD_FOLDER"sunburst_image.o",
-        "-DGL_SILENCE_DEPRECATION"
-    );
-    nob_cmd_run(&cmd);
-    nob_cmd_append(&cmd,
-        "clang", "-c",
-        SRC_FOLDER"sunburst.c",
-        "-o", BUILD_FOLDER"sunburst.o"
-    );
-    nob_cmd_run(&cmd);
-    // --- Compile Swift source into object ---
-    nob_cmd_append(&cmd,
-        "swiftc",
-        "-emit-object",
-        "-parse-as-library",
-        "-Ounchecked",
-        "-sdk", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
-        "-framework", "AppKit",
-        "-framework", "OpenGL",
-        "-import-objc-header", "src/bridge.h",
-        "-Xcc", "-I", "-Xcc", "src/",   // <<< FIXED: was 'scr/'
-        "-o", "build/sunburst_swift.o",
-        "implements/b_AppKit.swift"
-    );
-    nob_cmd_run(&cmd);
+    const char *srcs[] = {"src/sunburst_draw.c", "src/sunburst.c"};
+    const char *objs[] = {"build/sunburst_draw.o", "build/sunburst.o"};
+    for (int i = 0; i < (int)NOB_ARRAY_LEN(srcs); ++i) {
+        cmd.count = 0;
+        nob_cmd_append(&cmd, "clang", "-c", srcs[i], "-o", objs[i], "-DGL_SILENCE_DEPRECATION");
+        if (!nob_cmd_run(&cmd)) return 1;
+    }
+    cmd.count = 0;
+    nob_cmd_append(&cmd, "libtool", "-static", "-o", "build/sunburst.a", objs[0], objs[1]);
+    if (!nob_cmd_run(&cmd)) return 1;
 
-    // --- Archive to static lib ---
-    nob_cmd_append(&cmd,
-        "libtool",
-        "-static",
-        "-o", BUILD_FOLDER"sunburst.a",
-        BUILD_FOLDER"sunburst_swift.o",   // <- corrected name
-        BUILD_FOLDER"sunburst_input.o",
-        BUILD_FOLDER"sunburst_draw.o",
-        BUILD_FOLDER"sunburst_image.o",
-        BUILD_FOLDER"sunburst.o"
-    );
-    nob_cmd_run(&cmd);
-#elif defined(__linux__)
-    nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c");
-#elif defined(_MSC_VER)
-    // Backend
-    nob_cmd_append(&cmd, "cl", "/c", IMPLNTS"b_Win32.c",
-        "/Fo:" BUILD_FOLDER "b_Win32.obj", "/std:c11", "/O2", "/EHsc",
-        "/DUNICODE", "/D_UNICODE", "/nologo");
-    nob_cmd_run(&cmd);
+    if (argc > 1) {
+        cmd.count = 0;
+        nob_cmd_append(&cmd, "clang", "-c", argv[1], "-o", "build/gameEx.o", "-DGL_SILENCE_DEPRECATION");
+        if (!nob_cmd_run(&cmd)) return 1;
 
-    // GL loader (Windows)
-    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sb_gl_loader.c",
-        "/Fo:" BUILD_FOLDER "sb_gl_loader.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
-    nob_cmd_run(&cmd);
-
-    // C helpers
-    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_draw.c",
-        "/Fo:" BUILD_FOLDER "sunburst_draw.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
-    nob_cmd_run(&cmd);
-    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_input.c",
-        "/Fo:" BUILD_FOLDER "sunburst_input.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
-    nob_cmd_run(&cmd);
-    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst_image.c",
-        "/Fo:" BUILD_FOLDER "sunburst_image.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
-    nob_cmd_run(&cmd);
-
-
-    nob_cmd_append(&cmd, "cl", "/c", SRC_FOLDER"sunburst.c",
-        "/Fo:" BUILD_FOLDER "sunburst.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
-    nob_cmd_run(&cmd);
-
-
-    #else
-    #   error "Unsupported platform"
-#endif // _MSC_VER
-
-
-    if(argc > 1){
-        #if defined(__APPLE__)
-        // 1) Compile the C example
+        cmd.count = 0;
         nob_cmd_append(&cmd,
             "clang",
-            "-c",
-            argv[1],
-            "-o", BUILD_FOLDER"gameEx.o",
-            "-DGL_SILENCE_DEPRECATION"       // optional: quiets macOS GL deprecation warnings
+            "build/gameEx.o", objs[0], objs[1], "build/sunburst.a",
+            "-framework", "Cocoa", "-framework", "OpenGL",
+            "-o", "build/game"
         );
-        nob_cmd_run(&cmd);
-
-        // 2) Link with swiftc so Swift stdlib is handled + frameworks are easy
-        nob_cmd_append(&cmd,
-            "swiftc",
-            BUILD_FOLDER"gameEx.o",
-            BUILD_FOLDER"sunburst_draw.o",
-            BUILD_FOLDER"sunburst_image.o",
-            BUILD_FOLDER"sunburst_input.o",
-            BUILD_FOLDER"sunburst.o",
-            BUILD_FOLDER"sunburst.a",
-            "-framework", "AppKit",
-            "-framework", "OpenGL",
-            "-o", BUILD_FOLDER"game",
-            // Make sure Swift runtime can be found at runtime (usually /usr/lib/swift on macOS)
-            "-Xlinker", "-rpath", "-Xlinker", "@executable_path",
-            "-Xlinker", "-rpath", "-Xlinker", "/usr/lib/swift"
-        );
-        nob_cmd_run(&cmd);
-        #elif defined(__linux__)
-            nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", BUILD_FOLDER"sunburst", SRC_FOLDER"gameEx.c");
-        #elif defined(_MSC_VER)
-            // Example
-            nob_cmd_append(&cmd, "cl", "/c", argv[1],
-                "/Fo:" BUILD_FOLDER "gameEx.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
-            nob_cmd_run(&cmd);
-
-            // Link
-            nob_cmd_append(&cmd,
-                "link",
-                BUILD_FOLDER"b_Win32.obj",
-                BUILD_FOLDER"sb_gl_loader.obj",
-                BUILD_FOLDER"sunburst_draw.obj",
-                BUILD_FOLDER"sunburst_input.obj",
-                BUILD_FOLDER"sunburst_image.obj",
-                BUILD_FOLDER"sunburst.obj",
-                BUILD_FOLDER"gameEx.obj",
-                "opengl32.lib", "gdi32.lib", "user32.lib",
-                "/OUT:" BUILD_FOLDER "game.exe",
-                "/SUBSYSTEM:CONSOLE",
-                "/nologo"
-            );
-
-            nob_cmd_run(&cmd);
-
-            #else
-            #   error "Unsupported platform"
-        #endif 
+        if (!nob_cmd_run(&cmd)) return 1;
     } else {
-        printf("No target provided\nOnly compiled engine\n");
+        nob_log(NOB_INFO, "No target provided — built engine static lib.");
     }
+
+#elif defined(_MSC_VER)
+    const char *wsrcs[] = {
+        "implements/b_Win32.c",
+        "src/sb_gl_loader.c",
+        "src/sunburst_draw.c",
+        "src/sunburst_input.c",
+        "src/sunburst_image.c",
+        "src/sunburst.c",
+    };
+    const char *wobjs[] = {
+        "build/b_Win32.obj",
+        "build/sb_gl_loader.obj",
+        "build/sunburst_draw.obj",
+        "build/sunburst_input.obj",
+        "build/sunburst_image.obj",
+        "build/sunburst.obj",
+    };
+    for (int i = 0; i < (int)NOB_ARRAY_LEN(wsrcs); ++i) {
+        cmd.count = 0;
+        nob_cmd_append(&cmd, "cl", "/c", wsrcs[i],
+            "/Fo:", wobjs[i], "/std:c11", "/O2", "/EHsc", "/nologo");
+        if (!nob_cmd_run(&cmd)) return 1;
+    }
+
+    if (argc > 1) {
+        cmd.count = 0;
+        nob_cmd_append(&cmd, "cl", "/c", argv[1],
+            "/Fo:", "build/gameEx.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
+        if (!nob_cmd_run(&cmd)) return 1;
+
+        cmd.count = 0;
+        nob_cmd_append(&cmd,
+            "link",
+            wobjs[0], wobjs[1], wobjs[2], wobjs[3], wobjs[4], wobjs[5],
+            "build/gameEx.obj",
+            "opengl32.lib", "gdi32.lib", "user32.lib",
+            "/OUT:build/game.exe", "/SUBSYSTEM:CONSOLE", "/nologo"
+        );
+        if (!nob_cmd_run(&cmd)) return 1;
+    } else {
+        nob_log(NOB_INFO, "No target provided — built engine objects.");
+    }
+
+#elif defined(__linux__)
+    cmd.count = 0;
+    // Linux path here is your call; this mirrors your original single-link example.
+    nob_cmd_append(&cmd, "cc", "-Wall", "-Wextra", "-o", "build/sunburst", "src/gameEx.c");
+    if (!nob_cmd_run(&cmd)) return 1;
+
+#else
+#   error "Unsupported platform"
+#endif
 
     return 0;
 }

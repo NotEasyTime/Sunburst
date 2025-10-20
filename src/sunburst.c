@@ -1,36 +1,5 @@
 #include "sunburst.h"
 
-int CheckRectsOverlap(const Rect* a, const Rect* b) {
-    if (!a || !b) return 0;
-    return !(a->x + a->width  <= b->x ||
-             b->x + b->width  <= a->x ||
-             a->y + a->height <= b->y ||
-             b->y + b->height <= a->y);
-}
-
-int CheckRectPoint(const Rect* r, float px, float py) {
-    if (!r) return 0;
-    return (px >= r->x && px <= r->x + r->width &&
-            py >= r->y && py <= r->y + r->height);
-}
-
-int GetRectOverlap(const Rect* a, const Rect* b, Rect* result) {
-    if (!a || !b || !result) return 0;
-
-    if (!CheckRectsOverlap(a, b)) return 0;
-
-    float x1 = (a->x > b->x) ? a->x : b->x;
-    float y1 = (a->y > b->y) ? a->y : b->y;
-    float x2 = ((a->x + a->width)  < (b->x + b->width))  ? (a->x + a->width)  : (b->x + b->width);
-    float y2 = ((a->y + a->height) < (b->y + b->height)) ? (a->y + a->height) : (b->y + b->height);
-
-    result->x = x1;
-    result->y = y1;
-    result->width  = x2 - x1;
-    result->height = y2 - y1;
-    return 1;
-}
-
 #if defined(_WIN32)
   #include <windows.h>
   static double now_seconds(void) {
@@ -76,10 +45,8 @@ void PrintFrameRate(void) {
     }
 }
 
-void ClearBackground(){
-    int w=0,h=0;
-    GetFramebufferSize(&w,&h);
-    glViewport(0,0,w,h);
-    glClearColor(0.08f,0.09f,0.11f,1.0f);
-    glClear(0x00004000);
+void ClearBackground(void) {
+    glClearColor(0.08f, 0.08f, 0.10f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
+

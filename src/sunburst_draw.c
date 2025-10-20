@@ -1,5 +1,6 @@
-#include "sunburst.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "sunburst.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -48,11 +49,6 @@
   // or ensure <GL/gl.h> + loader provides core profile functions.
   #include <GL/gl.h>
 #endif
-
-// -----------------------------------------------------------------------------
-// External platform hooks
-extern void GetFramebufferSize(int* outW, int* outH);
-extern void GL_SwapBuffers(void);
 
 // -----------------------------------------------------------------------------
 // Attribute locations
@@ -482,18 +478,22 @@ void RendererShutdown(void) {
     rectbatch_shutdown();
 }
 
-void Begin2D(void) {
-    GetFramebufferSize(&s_fbW, &s_fbH);
-    s_rectBatch.countQuads = 0;
-    s_texBatch.countQuads  = 0;
-    // No GL binds here; flush does correct binds per batch.
+void Begin2D(int fbWidth, int fbHeight) {
+    s_fbW = fbWidth;
+    s_fbH = fbHeight;
+    glViewport(0, 0, fbWidth, fbHeight);
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+
 
 void End2D(void) {
     // If you tend to draw rects then sprites, this order preserves that pattern
     rectbatch_flush();
     texbatch_flush();
-    GL_SwapBuffers();
 }
 
 void Flush2D(void) {
