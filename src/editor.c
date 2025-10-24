@@ -43,7 +43,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(640, 480, "Editor", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -63,22 +63,28 @@ int main(void)
     Clay_Arena arena = Clay_CreateArenaWithCapacityAndMemory(bytes, mem);
     Clay_Initialize(arena, (Clay_Dimensions){ 640, 480 }, (Clay_ErrorHandler){ HandleClayErrors });
 
+    int size = 75;
+    double xpos, ypos;
    
-while (!glfwWindowShouldClose(window))
-{
-    int fbW = 0, fbH = 0;
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    fbW = viewport[2];
-    fbH = viewport[3];
+while (!glfwWindowShouldClose(window)){
 
-    Clay_SetLayoutDimensions((Clay_Dimensions){ fbW, fbH });
+    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1)) glfwGetCursorPos(window, &xpos, &ypos);
+
+    int width, height;
+    float xscale, yscale;
+    glfwGetWindowContentScale(window, &xscale, &yscale);
+    glfwGetWindowSize(window, &width, &height); 
+    double mouse_x_px = xpos * xscale;
+    double mouse_y_px = ypos * yscale;
+
+    Clay_SetLayoutDimensions((Clay_Dimensions){ width * xscale, height * yscale });
     Clay_BeginLayout();
 
         // Outer container
         CLAY(
             CLAY_ID("OuterContainer"),
             (Clay_ElementDeclaration){
+                
                 .layout = {
                     .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0) },
                     .padding = CLAY_PADDING_ALL(16),
@@ -87,7 +93,36 @@ while (!glfwWindowShouldClose(window))
                 .backgroundColor = (Clay_Color){250,250,255,255}
             }
         ) {
-            
+            CLAY(
+                    CLAY_ID("DragMe"),
+                    (Clay_ElementDeclaration){
+                        .layout = {
+                        .sizing = {.width = mouse_x_px, .height = CLAY_SIZING_GROW(0) },
+                        .padding = CLAY_PADDING_ALL(16),
+                        .childGap = 16,
+                        .childAlignment = { .x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER}
+                    },
+                    .backgroundColor = (Clay_Color){200,200,255,255}
+                    }
+                ) {
+
+                    CLAY(CLAY_ID("INner"), (Clay_ElementDeclaration){
+                        .layout = {
+                        .sizing = { .width = 15, .height = CLAY_SIZING_GROW(0) },
+                        .padding = CLAY_PADDING_ALL(16),
+                        .childGap = 16
+                    },
+                    .backgroundColor = (Clay_Color){100,200,100,255}
+                    }){}
+                    CLAY(CLAY_ID("INner2"), (Clay_ElementDeclaration){
+                        .layout = {
+                        .sizing = { .width = 15, .height = CLAY_SIZING_PERCENT(.9) },
+                        .padding = CLAY_PADDING_ALL(16),
+                        .childGap = 16
+                    },
+                    .backgroundColor = (Clay_Color){100,200,100,255}
+                    }){}
+            } 
             CLAY(
                 CLAY_ID("MainContent"),
                 (Clay_ElementDeclaration){
@@ -100,7 +135,7 @@ while (!glfwWindowShouldClose(window))
         Clay_RenderCommandArray cmds = Clay_EndLayout();
 
         ClearBackground();
-        Begin2D(fbW, fbH);
+        Begin2D(640 * xscale, 480 * yscale);
 
         for (int i = 0; i < cmds.length; i++) {
             Clay_RenderCommand* rc = &cmds.internalArray[i];
