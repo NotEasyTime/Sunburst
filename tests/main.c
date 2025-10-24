@@ -9,7 +9,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <OpenGL/gl3.h>
+#if defined(__APPLE__)
+  #define GL_SILENCE_DEPRECATION 1
+  #include <OpenGL/gl3.h>
+#elif defined(__linux__)
+  #include <GL/gl.h>
+#endif
 
 const Clay_Color COLOR_LIGHT  = (Clay_Color){224, 215, 210, 255};
 const Clay_Color COLOR_RED    = (Clay_Color){168,  66,  28, 255};

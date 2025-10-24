@@ -4,6 +4,12 @@
 #if defined(__APPLE__)
   #define GL_SILENCE_DEPRECATION 1
   #include <OpenGL/gl3.h>
+#elif defined(__linux__)
+  #ifndef GL_GLEXT_PROTOTYPES
+    #define GL_GLEXT_PROTOTYPES 1
+  #endif
+  #include <GL/glcorearb.h>
+  #include <GL/gl.h>
 #endif
 
 typedef struct Color { float r, g, b, a; } Color;
@@ -38,4 +44,3 @@ void DrawTexture(Texture*, int, int, int, int, bool);
 
 // Clay 
 //void UI_Checkbox(RGFW_window*, Checkbox, bool);
-
