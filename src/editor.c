@@ -9,12 +9,6 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
-#if defined(__APPLE__)
-  #define GL_SILENCE_DEPRECATION 1
-  #include <OpenGL/gl3.h>
-#elif defined(__linux__)
-  #include <GL/gl.h>
-#endif
 
 void HandleClayErrors(Clay_ErrorData errorData) {
     printf("%s", errorData.errorText.chars);
