@@ -135,7 +135,7 @@ while (!glfwWindowShouldClose(window)){
         Clay_RenderCommandArray cmds = Clay_EndLayout();
 
         ClearBackground();
-        Begin2D(640 * xscale, 480 * yscale);
+        Begin2D(width * xscale, height * yscale);
 
         for (int i = 0; i < cmds.length; i++) {
             Clay_RenderCommand* rc = &cmds.internalArray[i];
