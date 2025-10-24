@@ -12,5 +12,3 @@ Game Engine
 - Macos `./nob path/to/main.c`
 
 - The compiler outputs in `build/game.exe` or `build/game`
-
-- You will need to provide your own bee.png at the product root
