@@ -1,13 +1,15 @@
-#define CLAY_IMPLEMENTATION
-#define RGFW_IMPLEMENTATION
-#define RGFW_OPENGL
-#define RGFW_DEBUG
-#include "../src/RGFW.h"
-#include "../src/clay.h"
+#define GLFW_INCLUDE_NONE
+#include "../src/glfw3.h"
+
 #include "../src/sunburst.h"
 
-#include <stdio.h>
+#define CLAY_IMPLEMENTATION
+#include "../src/clay.h"
+
 #include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <OpenGL/gl3.h>
 
 const Clay_Color COLOR_LIGHT  = (Clay_Color){224, 215, 210, 255};
 const Clay_Color COLOR_RED    = (Clay_Color){168,  66,  28, 255};
@@ -19,6 +21,17 @@ void HandleClayErrors(Clay_ErrorData errorData) {
     switch (errorData.errorType) {
         default: /* intentionally fallthrough to just logging above */ break;
     }
+}
+
+static void error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Error: %s\n", description);
+}
+
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
 static Clay_ElementDeclaration sidebarItemConfig = (Clay_ElementDeclaration){
@@ -38,42 +51,48 @@ static void SidebarItemComponent(void) {
     }
 }
 
-int main(void) {
-    RGFW_glHints* hints = RGFW_getGlobalHints_OpenGL();
-    hints->major = 4;
-    hints->minor = 1;
-    RGFW_setGlobalHints_OpenGL(hints);
+int main(void)
+{
+    glfwSetErrorCallback(error_callback);
 
-    i32 w = 800, h = 600;
-    RGFW_window* win = RGFW_createWindow("a window", 0, 0, w, h, RGFW_windowCenter);
-    RGFW_window_createContext_OpenGL(win, hints);
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+
+    glfwSetKeyCallback(window, key_callback);
+
+    glfwMakeContextCurrent(window);
+    //gladLoadGL(glfwGetProcAddress);
+    glfwSwapInterval(1);
 
     RendererInit();
 
     uint64_t bytes = Clay_MinMemorySize();
     void* mem = malloc(bytes);
     Clay_Arena arena = Clay_CreateArenaWithCapacityAndMemory(bytes, mem);
-    Clay_Initialize(arena, (Clay_Dimensions){ w, h }, (Clay_ErrorHandler){ HandleClayErrors });
+    Clay_Initialize(arena, (Clay_Dimensions){ 640, 480 }, (Clay_ErrorHandler){ HandleClayErrors });
 
-    while (RGFW_window_shouldClose(win) == RGFW_FALSE) {
-        RGFW_event ev;
-        while (RGFW_window_checkEvent(win, &ev)) { /* no-op */ }
+   
+while (!glfwWindowShouldClose(window))
+{
+    int fbW = 0, fbH = 0;
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    fbW = viewport[2];
+    fbH = viewport[3];
 
-        // Retina-correct drawable (framebuffer) size 
-        // Use the framebuffer pixel size on macOS/Retina. This is the size GL actually renders to.
-        int fbW = 0, fbH = 0;
-        GLint viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-        fbW = viewport[2];
-        fbH = viewport[3];
-
-        Clay_SetLayoutDimensions((Clay_Dimensions){ fbW, fbH });
-
-        i32 mouseX = 0, mouseY = 0;
-        RGFW_window_getMouse(win, &mouseX, &mouseY);
-        Clay_SetPointerState((Clay_Vector2){ (float)mouseX, (float)mouseY }, 0);
-
-        Clay_BeginLayout();
+    Clay_SetLayoutDimensions((Clay_Dimensions){ fbW, fbH });
+    Clay_BeginLayout();
 
         // Outer container
         CLAY(
@@ -120,14 +139,9 @@ int main(void) {
                             .image  = { .imageData = &profilePicture }
                         }
                     ) { }
-
-                    CLAY_TEXT(
-                        CLAY_STRING("Clay - UI Library"),
-                        CLAY_TEXT_CONFIG({ .fontSize = 24, .textColor = (Clay_Color){255,255,255,255} })
-                    );
                 }
 
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < 1; i++) {
                     SidebarItemComponent();
                 }
             }
@@ -143,7 +157,7 @@ int main(void) {
         Clay_RenderCommandArray cmds = Clay_EndLayout();
 
         ClearBackground();
-        Begin2D((int)fbW, (int)fbH);
+        Begin2D(fbW, fbH);
 
         for (int i = 0; i < cmds.length; i++) {
             Clay_RenderCommand* rc = &cmds.internalArray[i];
@@ -164,10 +178,13 @@ int main(void) {
         }
 
         End2D();
-        RGFW_window_swapBuffers_OpenGL(win);
-    }
-    RendererShutdown();
-    RGFW_window_close(win);
-    free(mem);
-    return 0;
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
+    glfwDestroyWindow(window);
+
+    glfwTerminate();
+    exit(EXIT_SUCCESS);
 }

@@ -21,14 +21,16 @@ int main(int argc, char **argv) {
 
     if (argc > 1) {
         cmd.count = 0;
-        nob_cmd_append(&cmd, "clang", "-c", argv[1], "-o", "build/gameEx.o", "-DGL_SILENCE_DEPRECATION");
+        nob_cmd_append(&cmd, "clang", "-c", argv[1], "-o", "build/gameEx.o", "-DGL_SILENCE_DEPRECATION", "-Wno-undefined-inline");
         if (!nob_cmd_run(&cmd)) return 1;
 
         cmd.count = 0;
         nob_cmd_append(&cmd,
             "clang",
-            "build/gameEx.o", objs[0], objs[1], "build/sunburst.a",
-            "-framework", "Cocoa", "-framework", "OpenGL",
+            "build/gameEx.o", "build/libglfw3.a", "build/sunburst.a",
+            "-framework", "Cocoa", "-framework", "OpenGL", "-framework", "IOKit",
+            "-framework", "CoreVideo",
+            "-framework", "QuartzCore",
             "-o", "build/game"
         );
         if (!nob_cmd_run(&cmd)) return 1;

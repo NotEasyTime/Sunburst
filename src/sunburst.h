@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include "clay.h"
 #if defined(__APPLE__)
   #define GL_SILENCE_DEPRECATION 1
   #include <OpenGL/gl3.h>
@@ -10,10 +11,6 @@
   #include <GL/gl.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct Color { float r, g, b, a; } Color;
 
 typedef struct {
@@ -22,12 +19,18 @@ typedef struct {
     int height;
 } Texture;
 
+typedef struct {
+    // TODO: add clay id
+    bool *value;
+    float size_px;
+    float gap_px;
+} Checkbox;
+
 // Diagnostics
 void PrintFrameRate(void);
 
 // simple 2D drawing
 void DrawRectangle(int, int, int, int, Color);
-// static inline void DrawRectangleRect(Rect* r, Color c){ DrawRectangle(r->x, r->y, r->width, r->height, c); }
 
 void ClearBackground();
 void Begin2D(int ,int);
@@ -38,6 +41,6 @@ Texture LoadTexture(const char*);
 void DestroyTexture(Texture*);
 void DrawTexture(Texture*, int, int, int, int, bool);
 
-#ifdef __cplusplus
-}
-#endif
+// Clay 
+//void UI_Checkbox(RGFW_window*, Checkbox, bool);
+
