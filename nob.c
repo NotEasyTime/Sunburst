@@ -8,15 +8,15 @@ int main(int argc, char **argv) {
     Nob_Cmd cmd = {0};
 
 #if defined(__APPLE__)
-    const char *srcs[] = {"src/sunburst_draw.c", "src/sunburst.c"};
-    const char *objs[] = {"build/sunburst_draw.o", "build/sunburst.o"};
+    const char *srcs[] = {"src/sunburst_draw.c", "src/sunburst.c", "src/sunburst_ui.c"};
+    const char *objs[] = {"build/sunburst_draw.o", "build/sunburst.o", "build/sunburst_ui.o"};
     for (int i = 0; i < (int)NOB_ARRAY_LEN(srcs); ++i) {
         cmd.count = 0;
         nob_cmd_append(&cmd, "clang", "-c", srcs[i], "-o", objs[i], "-DGL_SILENCE_DEPRECATION");
         if (!nob_cmd_run(&cmd)) return 1;
     }
     cmd.count = 0;
-    nob_cmd_append(&cmd, "libtool", "-static", "-o", "build/sunburst.a", objs[0], objs[1]);
+    nob_cmd_append(&cmd, "libtool", "-static", "-o", "build/sunburst.a", objs[0], objs[1], objs[2]);
     if (!nob_cmd_run(&cmd)) return 1;
 
     if (argc > 1) {
