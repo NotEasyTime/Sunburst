@@ -1,4 +1,5 @@
 #include "sunburst.h"
+#include <stdio.h>
 
 #if defined(_WIN32)
   #include <windows.h>
@@ -49,4 +50,3 @@ void ClearBackground(void) {
     glClearColor(0.08f, 0.08f, 0.10f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
-
