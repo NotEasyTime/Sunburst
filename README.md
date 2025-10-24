@@ -4,6 +4,7 @@ Game Engine
 ## Architecture 
 - nob.h for the build system
 - GLFW for cross platform windowing and inuput
+- GLAD for OpenGL function loading on windows
 - clay for the layout engine
 - stb_image for image loading and textures
 - sunburst for the opengl rendering/ rest of the game engine
@@ -13,6 +14,7 @@ Game Engine
 - You will need a static libglfw.a in the build/ folder,
   - This can be sourced from GLFW's github relseases page.
   - Sunburst currently uses version 3.4
+  - On windows compile with cmake + visual studio in release mode 
 - To compile the engine and tests you'll need clang on macos or msvc on windows
 - nob.c will need to be bootstraped once
 - nob.c once compiled will check if its source code has been modified and will recompile itself if it has 
