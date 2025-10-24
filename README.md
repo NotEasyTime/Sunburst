@@ -11,7 +11,7 @@ Game Engine
 ## To run
 
 - You will need a static libglfw.a in the build/ folder,
-  - this can be sourced from GLFW github relseases page.
+  - This can be sourced from GLFW's github relseases page.
   - Sunburst currently uses version 3.4
 - To compile the engine and tests you'll need clang on macos or msvc on windows
 - nob.c will need to be bootstraped once
