@@ -1,6 +1,6 @@
 #define GLFW_INCLUDE_NONE
 #include "../src/glfw3.h"
-
+#include "../src/glad/glad.h"
 #include "../src/sunburst.h"
 
 #define CLAY_IMPLEMENTATION
@@ -56,8 +56,16 @@ int main(void)
     }
 
     glfwSetKeyCallback(window, key_callback);
-
     glfwMakeContextCurrent(window);
+
+    #if defined(_MSC_VER)
+        if (!gladLoadGL()) {
+        fprintf(stderr, "Failed to load OpenGL via GLAD\n");
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+    #endif
+
     //gladLoadGL(glfwGetProcAddress);
     glfwSwapInterval(1);
 

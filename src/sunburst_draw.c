@@ -6,13 +6,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#if defined(__APPLE__)
-  #define GL_SILENCE_DEPRECATION 1
-  #include <OpenGL/gl3.h>
-#elif defined(__linux__)
-  #include <GL/gl.h>
-#endif
-
 // Attribute locations
 #define ATTR_POS   0
 #define ATTR_COLOR 1
@@ -164,7 +157,7 @@ static void rectbatch_shutdown(void) {
     if (s_rectBatch.ebo)  { glDeleteBuffers(1, &s_rectBatch.ebo);  s_rectBatch.ebo = 0; }
     if (s_rectBatch.vao)  { glDeleteVertexArrays(1, &s_rectBatch.vao); s_rectBatch.vao = 0; }
     #if defined(_MSC_VER) 
-    if (s_rectBatch.prog) { pglDeleteProgram(s_rectBatch.prog); s_rectBatch.prog = 0; }
+    if (s_rectBatch.prog) { glDeleteProgram(s_rectBatch.prog); s_rectBatch.prog = 0; }
     #elif defined(__APPLE__)
     if (s_rectBatch.prog) { glDeleteProgram(s_rectBatch.prog); s_rectBatch.prog = 0; }
     #endif
@@ -323,7 +316,7 @@ static void texbatch_shutdown(void) {
     if (s_texBatch.ebo) { glDeleteBuffers(1, &s_texBatch.ebo); s_texBatch.ebo = 0; }
     if (s_texBatch.vao) { glDeleteVertexArrays(1, &s_texBatch.vao); s_texBatch.vao = 0; }
     #if defined(_MSC_VER)
-    if (s_texBatch.prog){ pglDeleteProgram(s_texBatch.prog); s_texBatch.prog = 0; }
+    if (s_texBatch.prog){ glDeleteProgram(s_texBatch.prog); s_texBatch.prog = 0; }
     #elif defined(__APPLE__)
     if (s_texBatch.prog){ glDeleteProgram(s_texBatch.prog); s_texBatch.prog = 0; }
     #endif

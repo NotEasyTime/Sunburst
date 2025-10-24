@@ -1,8 +1,8 @@
 #define NOB_IMPLEMENTATION
 #include "nob.h"
 
-const char *srcs[] = {"src/sunburst_draw.c", "src/sunburst.c", "src/sunburst_ui.c"};
-const char *objs[] = {"build/sunburst_draw.o", "build/sunburst.o", "build/sunburst_ui.o"};
+const char *srcs[] = {"src/sunburst_draw.c", "src/sunburst.c", "src/sunburst_ui.c", "src/glad.c"};
+const char *objs[] = {"build/sunburst_draw.o", "build/sunburst.o", "build/sunburst_ui.o", "build/glad.o"};
 
 int unix_sb_lib(){
     Nob_Cmd cmd = {0};
@@ -51,22 +51,22 @@ int main(int argc, char **argv) {
     for (int i = 0; i < (int)NOB_ARRAY_LEN(srcs); ++i) {
         cmd.count = 0;
         nob_cmd_append(&cmd, "cl", "/c", srcs[i],
-            "/Fo:", objs[i], "/std:c11", "/O2", "/EHsc", "/nologo");
+            "/Fo:", objs[i], "/std:c11", "/O2", "/EHsc", "/nologo", "/MD");
         if (!nob_cmd_run(&cmd)) return 1;
     }
 
     if (argc > 1) {
         cmd.count = 0;
         nob_cmd_append(&cmd, "cl", "/c", argv[1],
-            "/Fo:", "build/gameEx.obj", "/std:c11", "/O2", "/EHsc", "/nologo");
+            "/Fo:", "build/gameEx.obj", "/std:c11", "/O2", "/EHsc", "/nologo", "/MD");
         if (!nob_cmd_run(&cmd)) return 1;
 
         cmd.count = 0;
         nob_cmd_append(&cmd,
             "link",
-            objs[0], objs[1], objs[2],
+            "build/glfw3.lib", objs[0], objs[1], objs[2], objs[3],
             "build/gameEx.obj",
-            "opengl32.lib", "gdi32.lib", "user32.lib",
+            "opengl32.lib", "gdi32.lib", "user32.lib", "shell32.lib", "legacy_stdio_definitions.lib",
             "/OUT:build/game.exe", "/SUBSYSTEM:CONSOLE", "/nologo"
         );
         if (!nob_cmd_run(&cmd)) return 1;
