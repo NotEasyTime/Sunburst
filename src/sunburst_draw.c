@@ -9,54 +9,13 @@
 #if defined(__APPLE__)
   #define GL_SILENCE_DEPRECATION 1
   #include <OpenGL/gl3.h>   // Core profile
-#elif defined(_WIN32)
-  #include <windows.h>      // must precede gl.h so WINGDIAPI/APIENTRY are defined
-  #include <GL/gl.h>
-  #include "sb_gl_loader.h" // your function loader providing pgl* pointers
-
-  // Map modern GL calls to loaded pointers. Ensure your loader defines these.
-  #define glCreateProgram            pglCreateProgram
-  #define glCreateShader             pglCreateShader
-  #define glShaderSource             pglShaderSource
-  #define glCompileShader            pglCompileShader
-  #define glGetShaderiv              pglGetShaderiv
-  #define glGetShaderInfoLog         pglGetShaderInfoLog
-  #define glAttachShader             pglAttachShader
-  #define glLinkProgram              pglLinkProgram
-  #define glGetProgramiv             pglGetProgramiv
-  #define glGetProgramInfoLog        pglGetProgramInfoLog
-  #define glUseProgram               pglUseProgram
-  #define glDeleteShader             pglDeleteShader
-  #define glBindAttribLocation       pglBindAttribLocation
-  #define glGetUniformLocation       pglGetUniformLocation
-  #define glUniform1i                pglUniform1i
-
-  #define glGenVertexArrays          pglGenVertexArrays
-  #define glBindVertexArray          pglBindVertexArray
-  #define glGenBuffers               pglGenBuffers
-  #define glDeleteVertexArrays       pglDeleteVertexArrays
-  #define glDeleteBuffers            pglDeleteBuffers
-  #define glBindBuffer               pglBindBuffer
-  #define glBufferData               pglBufferData
-  #define glBufferSubData            pglBufferSubData
-  #define glEnableVertexAttribArray  pglEnableVertexAttribArray
-  #define glVertexAttribPointer      pglVertexAttribPointer
-  #define glDrawElements             pglDrawElements
-  #define glActiveTexture            pglActiveTexture
-
-#else
-  // On Linux/others, include your GL loader *before* this file in the build,
-  // or ensure <GL/gl.h> + loader provides core profile functions.
-  #include <GL/gl.h>
 #endif
 
-// -----------------------------------------------------------------------------
 // Attribute locations
 #define ATTR_POS   0
 #define ATTR_COLOR 1
 #define ATTR_UV    1 // reuse location 1 for uv in the textured pipeline
 
-// -----------------------------------------------------------------------------
 // Shaders
 static const char* s_rectVS =
 "#version 330 core\n"
@@ -85,7 +44,6 @@ static const char* s_texFS =
 "out vec4 outColor;\n"
 "void main(){ outColor = texture(tex, vUV); }\n";
 
-// -----------------------------------------------------------------------------
 // Common utilities
 static GLuint compile_shader(GLenum type, const char* src) {
     GLuint s = glCreateShader(type);
@@ -132,11 +90,9 @@ static void build_quad_indices(GLuint* dst, size_t quadCount) {
     }
 }
 
-// -----------------------------------------------------------------------------
 // Framebuffer cache
 static int s_fbW = 0, s_fbH = 0;
 
-// -----------------------------------------------------------------------------
 // Rect batch (indexed 4-vertex quads)
 // Vertex layout: [x, y, r, g, b, a]
 #define RECT_VTX_STRIDE_FLOATS 6
@@ -292,7 +248,6 @@ static inline void rectbatch_push(int x, int y, int w, int h,
     s_rectBatch.countQuads += 1;
 }
 
-// -----------------------------------------------------------------------------
 // Textured sprite batch (indexed 4-vertex quads)
 // Vertex layout: [x, y, u, v]
 #define TEX_VTX_STRIDE_FLOATS 4
@@ -461,7 +416,6 @@ static void texbatch_push_quad(GLuint tex, int x, int y, int w, int h, bool flip
     s_texBatch.countQuads += 1;
 }
 
-// -----------------------------------------------------------------------------
 // Public API
 void RendererInit(void) {
     rectbatch_init(2048);
@@ -512,7 +466,6 @@ void DrawTexture(Texture* tex, int x, int y, int w, int h, bool flipY) {
     texbatch_push_quad(tex->id, x, y, w, h, flipY);
 }
 
-// -----------------------------------------------------------------------------
 // Texture I/O (stb_image)
 Texture LoadTexture(const char* path) {
     Texture t = {0};
