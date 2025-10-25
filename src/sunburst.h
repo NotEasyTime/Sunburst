@@ -1,6 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include "clay.h"
+#include "glfw3.h"
 #if defined(__APPLE__)
   #define GL_SILENCE_DEPRECATION 1
   #include <OpenGL/gl3.h>
@@ -43,3 +44,8 @@ void DrawTexture(Texture*, int, int, int, int, bool);
 
 // Clay 
 //void UI_Checkbox(RGFW_window*, Checkbox, bool);
+void HandleClayErrors(Clay_ErrorData);
+
+// GLFW
+void error_callback(int, const char*);
+void SunburstInit();

@@ -10,19 +10,6 @@
 #include <stddef.h>
 #include <stdio.h>
 
-void HandleClayErrors(Clay_ErrorData errorData) {
-    printf("%s", errorData.errorText.chars);
-
-    switch (errorData.errorType) {
-        default: /* intentionally fallthrough to just logging above */ break;
-    }
-}
-
-static void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
-}
-
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -30,17 +17,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 
-
 int main(void)
 {
-    glfwSetErrorCallback(error_callback);
-
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+    SunburstInit();
 
     GLFWwindow* window = glfwCreateWindow(640, 480, "Editor", NULL, NULL);
     if (!window)
@@ -48,7 +28,6 @@ int main(void)
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
-
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
 

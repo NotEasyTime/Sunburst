@@ -25,19 +25,6 @@ static const char* s_rectFS =
 "out vec4 outColor;\n"
 "void main(){ outColor = vColor; }\n";
 
-static const char* s_texVS =
-"#version 330 core\n"
-"in vec2 pos;\n"
-"in vec2 uv;\n"
-"out vec2 vUV;\n"
-"void main(){ vUV = uv; gl_Position = vec4(pos, 0.0, 1.0); }\n";
-
-static const char* s_texFS =
-"#version 330 core\n"
-"in vec2 vUV;\n"
-"uniform sampler2D tex;\n"
-"out vec4 outColor;\n"
-"void main(){ outColor = texture(tex, vUV); }\n";
 
 // Common utilities
 static GLuint compile_shader(GLenum type, const char* src) {
@@ -243,183 +230,13 @@ static inline void rectbatch_push(int x, int y, int w, int h,
     s_rectBatch.countQuads += 1;
 }
 
-// Textured sprite batch (indexed 4-vertex quads)
-// Vertex layout: [x, y, u, v]
-#define TEX_VTX_STRIDE_FLOATS 4
-
-typedef struct TexBatch {
-    GLuint vbo;
-    GLuint ebo;
-    GLuint vao;
-    GLuint prog;
-    GLint  samplerLoc;
-
-    GLuint currentTex;
-    size_t capQuads;
-    size_t countQuads;
-    float* vtxData; // 4 verts/quad
-} TexBatch;
-
-static TexBatch s_texBatch = {0};
-
-static void bind_tex_attribs(GLuint prog) {
-    glBindAttribLocation(prog, ATTR_POS, "pos");
-    glBindAttribLocation(prog, ATTR_UV,  "uv");
-}
-
-static void texbatch_init(size_t capQuads) {
-    s_texBatch.capQuads   = capQuads ? capQuads : 2048;
-    s_texBatch.countQuads = 0;
-    s_texBatch.currentTex = 0;
-    s_texBatch.vtxData = (float*)malloc(
-        s_texBatch.capQuads * 4 * TEX_VTX_STRIDE_FLOATS * sizeof(float));
-
-    glGenVertexArrays(1, &s_texBatch.vao);
-    glBindVertexArray(s_texBatch.vao);
-
-    glGenBuffers(1, &s_texBatch.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, s_texBatch.vbo);
-
-    glGenBuffers(1, &s_texBatch.ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_texBatch.ebo);
-
-    // Static index buffer
-    const size_t indexCount = s_texBatch.capQuads * 6;
-    GLuint* indices = (GLuint*)malloc(indexCount * sizeof(GLuint));
-    build_quad_indices(indices, s_texBatch.capQuads);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 (GLsizeiptr)(indexCount * sizeof(GLuint)),
-                 indices, GL_STATIC_DRAW);
-    free(indices);
-
-    // Program + layout
-    GLuint vs = compile_shader(GL_VERTEX_SHADER,   s_texVS);
-    GLuint fs = compile_shader(GL_FRAGMENT_SHADER, s_texFS);
-    s_texBatch.prog = link_program(vs, fs, bind_tex_attribs);
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    s_texBatch.samplerLoc = glGetUniformLocation(s_texBatch.prog, "tex");
-
-    const GLsizei stride = (GLsizei)(sizeof(float) * TEX_VTX_STRIDE_FLOATS);
-    glEnableVertexAttribArray(ATTR_POS);
-    glVertexAttribPointer(ATTR_POS, 2, GL_FLOAT, GL_FALSE, stride, (void*)0);
-    glEnableVertexAttribArray(ATTR_UV);
-    glVertexAttribPointer(ATTR_UV,  2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(float)*2));
-}
-
-static void texbatch_shutdown(void) {
-    free(s_texBatch.vtxData); s_texBatch.vtxData = NULL;
-    s_texBatch.capQuads = s_texBatch.countQuads = 0;
-    s_texBatch.currentTex = 0;
-
-    if (s_texBatch.vbo) { glDeleteBuffers(1, &s_texBatch.vbo); s_texBatch.vbo = 0; }
-    if (s_texBatch.ebo) { glDeleteBuffers(1, &s_texBatch.ebo); s_texBatch.ebo = 0; }
-    if (s_texBatch.vao) { glDeleteVertexArrays(1, &s_texBatch.vao); s_texBatch.vao = 0; }
-    #if defined(_MSC_VER)
-    if (s_texBatch.prog){ glDeleteProgram(s_texBatch.prog); s_texBatch.prog = 0; }
-    #elif defined(__APPLE__)
-    if (s_texBatch.prog){ glDeleteProgram(s_texBatch.prog); s_texBatch.prog = 0; }
-    #endif
-    s_texBatch.samplerLoc = -1;
-}
-
-static void texbatch_maybe_grow(size_t requiredQuads) {
-    if (requiredQuads <= s_texBatch.capQuads) return;
-
-    size_t newCap = s_texBatch.capQuads;
-    while (newCap < requiredQuads) newCap <<= 1;
-
-    float* newV = (float*)realloc(
-        s_texBatch.vtxData, newCap * 4 * TEX_VTX_STRIDE_FLOATS * sizeof(float));
-    if (!newV) {
-        fprintf(stderr, "Out of memory growing textured batch.\n");
-        return;
-    }
-    s_texBatch.vtxData = newV;
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_texBatch.ebo);
-    const size_t indexCount = newCap * 6;
-    GLuint* indices = (GLuint*)malloc(indexCount * sizeof(GLuint));
-    build_quad_indices(indices, newCap);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 (GLsizeiptr)(indexCount * sizeof(GLuint)),
-                 indices, GL_STATIC_DRAW);
-    free(indices);
-
-    s_texBatch.capQuads = newCap;
-}
-
-static void texbatch_flush(void) {
-    if (s_texBatch.countQuads == 0 || s_texBatch.currentTex == 0) return;
-
-    const size_t vCount = s_texBatch.countQuads * 4;
-    const size_t vBytes = vCount * TEX_VTX_STRIDE_FLOATS * sizeof(float);
-    const size_t iCount = s_texBatch.countQuads * 6;
-
-    glUseProgram(s_texBatch.prog);
-    glBindVertexArray(s_texBatch.vao);
-    glBindBuffer(GL_ARRAY_BUFFER, s_texBatch.vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_texBatch.ebo);
-
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vBytes, NULL, GL_STREAM_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)vBytes, s_texBatch.vtxData);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, s_texBatch.currentTex);
-    if (s_texBatch.samplerLoc >= 0) glUniform1i(s_texBatch.samplerLoc, 0);
-
-    glDrawElements(GL_TRIANGLES, (GLsizei)iCount, GL_UNSIGNED_INT, (void*)0);
-
-    s_texBatch.countQuads = 0;
-}
-
-static void texbatch_push_quad(GLuint tex, int x, int y, int w, int h, bool flipY) {
-    if (w <= 0 || h <= 0 || s_fbW <= 0 || s_fbH <= 0) return;
-
-    // Texture change → flush current batch
-    if (s_texBatch.countQuads > 0 && tex != s_texBatch.currentTex) {
-        texbatch_flush();
-    }
-    s_texBatch.currentTex = tex;
-
-    const size_t need = s_texBatch.countQuads + 1;
-    if (need > s_texBatch.capQuads) {
-        texbatch_maybe_grow(need);
-        if (need > s_texBatch.capQuads) return; // OOM guard
-    }
-
-    // Pixel -> NDC (origin: top-left)
-    const float L =  2.0f * ((float)x        / (float)s_fbW) - 1.0f;
-    const float R =  2.0f * ((float)(x + w)  / (float)s_fbW) - 1.0f;
-    const float T =  1.0f - 2.0f * ((float)y        / (float)s_fbH);
-    const float B =  1.0f - 2.0f * ((float)(y + h)  / (float)s_fbH);
-
-    const float u0 = 0.0f, v0 = flipY ? 1.0f : 0.0f;
-    const float u1 = 1.0f, v1 = flipY ? 0.0f : 1.0f;
-
-    float* v = s_texBatch.vtxData + (s_texBatch.countQuads * 4 * TEX_VTX_STRIDE_FLOATS);
-
-    // V0 (L,T)
-    v[0]=L; v[1]=T; v[2]=u0; v[3]=v0;
-    // V1 (L,B)
-    v[4]=L; v[5]=B; v[6]=u0; v[7]=v1;
-    // V2 (R,T)
-    v[8]=R; v[9]=T; v[10]=u1; v[11]=v0;
-    // V3 (R,B)
-    v[12]=R; v[13]=B; v[14]=u1; v[15]=v1;
-
-    s_texBatch.countQuads += 1;
-}
-
 // Public API
 void RendererInit(void) {
     rectbatch_init(2048);
     texbatch_init(2048);
     s_fbW = s_fbH = 0;
 
-    // Optional: enable blending once (premultiplied recommended if assets are PMA)
-    // glEnable(GL_BLEND);
-    // glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    
 }
 
 void RendererShutdown(void) {
@@ -452,43 +269,4 @@ void Flush2D(void) {
 
 void DrawRectangle(int x, int y, int w, int h, Color c) {
     rectbatch_push(x, y, w, h, c.r, c.g, c.b, c.a);
-}
-
-void DrawTexture(Texture* tex, int x, int y, int w, int h, bool flipY) {
-    if (!tex || !tex->id) return;
-    if (w <= 0) w = tex->width;
-    if (h <= 0) h = tex->height;
-    texbatch_push_quad(tex->id, x, y, w, h, flipY);
-}
-
-// Texture I/O (stb_image)
-Texture LoadTexture(const char* path) {
-    Texture t = {0};
-    int comp = 0;
-    unsigned char* data = stbi_load(path, &t.width, &t.height, &comp, 4);
-    if (!data) {
-        fprintf(stderr, "stb_image: failed to load '%s'\n", path);
-        return t;
-    }
-
-    glGenTextures(1, &t.id);
-    glBindTexture(GL_TEXTURE_2D, t.id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // or LINEAR / mipmapped
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t.width, t.height, 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-    stbi_image_free(data);
-    return t;
-}
-
-void DestroyTexture(Texture* t) {
-    if (t && t->id) {
-        GLuint id = t->id;
-        glDeleteTextures(1, &id);
-        t->id = 0;
-        t->width = t->height = 0;
-    }
 }
